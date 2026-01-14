@@ -4,24 +4,35 @@ import { canRedeem } from '../utils/coin';
 export const MenuItemCard = ({ item, restaurant }) => {
   const { addToCart } = useAppActions();
   const { user, cart } = useAppState();
-  const coins = user?.coinBalances.find((c) => c.restaurantId === restaurant.id)?.coins ?? 0;
-  const coinsCommitted = cart.filter((c) => c.restaurantId === restaurant.id && c.isRedeemed).length * restaurant.coinThreshold;
-  const redeemable = canRedeem(Math.max(0, coins - coinsCommitted), restaurant.coinThreshold);
+  const restaurantId = restaurant?.id || restaurant?._id;
+  const coins = restaurantId ? user?.coinBalances?.find((c) => c.restaurantId === restaurantId)?.coins ?? 0 : 0;
+  const coinsCommitted = cart.filter((c) => c.restaurantId === restaurantId && c.isRedeemed).length * (restaurant?.coinThreshold || 100);
+  const redeemable = canRedeem(Math.max(0, coins - coinsCommitted), restaurant?.coinThreshold || 100);
 
   const handleAdd = (isRedeemed) => {
     addToCart({
-      id: `${item.id}${isRedeemed ? '-redeem' : ''}`,
+      id: `${item._id || item.id}${isRedeemed ? '-redeem' : ''}-${Date.now()}`,
       menuItem: item,
       quantity: 1,
-      restaurantId: restaurant.id,
+      restaurantId: restaurantId,
       isRedeemed,
     });
   };
 
+  const imageUrl = item.image 
+    ? (item.image.startsWith('http') ? item.image : `http://localhost:3001${item.image}`)
+    : null;
+
   return (
     <div className="group relative flex flex-col overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm transition hover:-translate-y-0.5 hover:shadow-md">
-      <div className="relative h-36 overflow-hidden">
-        <img src={item.image} alt={item.name} className="h-full w-full object-cover transition group-hover:scale-105" />
+      <div className="relative h-36 overflow-hidden bg-slate-100">
+        {imageUrl ? (
+          <img src={imageUrl} alt={item.name} className="h-full w-full object-cover transition group-hover:scale-105" />
+        ) : (
+          <div className="h-full w-full flex items-center justify-center">
+            <span className="text-4xl">🍽️</span>
+          </div>
+        )}
         {item.isSignature && (
           <span className="absolute left-3 top-3 rounded-full bg-brand-600 px-3 py-1 text-xs font-semibold text-white shadow">
             Signature
@@ -37,7 +48,7 @@ export const MenuItemCard = ({ item, restaurant }) => {
           <span className="rounded-full bg-slate-100 px-3 py-1 text-sm font-semibold text-slate-800">${item.price}</span>
         </div>
         <div className="mt-auto flex flex-wrap gap-2 text-xs font-medium text-slate-600">
-          <span className="rounded-full bg-slate-100 px-2 py-1">Coins: +{restaurant.coinRate}/$</span>
+          <span className="rounded-full bg-slate-100 px-2 py-1">Coins: +{restaurant?.coinRate || 5}/$</span>
           {redeemable && (
             <button
               onClick={() => handleAdd(true)}

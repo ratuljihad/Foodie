@@ -141,12 +141,71 @@ export let orders = [
     restaurantId: 'r3',
     restaurantName: 'Coastal Italian',
     total: 46,
+    status: 'delivered',
     createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 3).toISOString(),
     items: [
       { menuItemId: 'm7', name: 'Margherita Pizza', price: 15, quantity: 2, restaurantId: 'r3' },
       { menuItemId: 'm9', name: 'Tiramisu', price: 8, quantity: 1, restaurantId: 'r3' },
     ],
     coinDelta: 320,
+  },
+];
+
+// Mock restaurant users
+export const restaurantUsers = [
+  {
+    id: 'rest1',
+    name: 'Saffron Garden Owner',
+    email: 'restaurant@saffron.com',
+    role: 'restaurant',
+    restaurantId: 'r1',
+    restaurantName: 'Saffron Garden',
+    restaurantCoins: 15, // Restaurant earns coins from orders
+  },
+  {
+    id: 'rest2',
+    name: 'Umami Street Owner',
+    email: 'restaurant@umami.com',
+    role: 'restaurant',
+    restaurantId: 'r2',
+    restaurantName: 'Umami Street',
+    restaurantCoins: 8,
+  },
+  {
+    id: 'rest3',
+    name: 'Coastal Italian Owner',
+    email: 'restaurant@coastal.com',
+    role: 'restaurant',
+    restaurantId: 'r3',
+    restaurantName: 'Coastal Italian',
+    restaurantCoins: 12,
+  },
+];
+
+// Mock discounts
+export const discounts = [
+  {
+    id: 'disc1',
+    restaurantId: 'r1',
+    type: 'percentage',
+    value: 15,
+    code: 'SAFFRON15',
+    description: '15% off on all orders',
+    validFrom: new Date(Date.now() - 1000 * 60 * 60 * 24).toISOString(),
+    validUntil: new Date(Date.now() + 1000 * 60 * 60 * 24 * 30).toISOString(),
+    isActive: true,
+  },
+  {
+    id: 'disc2',
+    restaurantId: 'r2',
+    type: 'flat',
+    value: 5,
+    code: 'UMAMI5',
+    description: '$5 off on orders over $20',
+    minOrder: 20,
+    validFrom: new Date(Date.now() - 1000 * 60 * 60 * 24).toISOString(),
+    validUntil: new Date(Date.now() + 1000 * 60 * 60 * 24 * 15).toISOString(),
+    isActive: true,
   },
 ];
 

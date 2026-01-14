@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useMemo, useReducer } from 'react';
-import { api } from '../api/client';
+import { userApi } from '../api/userClient';
 import { calculateCoinDelta, calculateSubtotal } from '../utils/coin';
 
 const initialState = {
@@ -84,17 +84,12 @@ export const AppProvider = ({ children }) => {
     const load = async () => {
       dispatch({ type: 'SET_LOADING', payload: true });
       try {
-        const [restaurantsData, userData, ordersData] = await Promise.all([
-          api.getRestaurants(),
-          api.getUser(),
-          api.getOrders(),
-        ]);
+        const restaurantsData = await userApi.getRestaurants();
         dispatch({ type: 'SET_RESTAURANTS', payload: restaurantsData });
-        dispatch({ type: 'SET_USER', payload: userData });
-        dispatch({ type: 'SET_ORDERS', payload: ordersData });
         dispatch({ type: 'SET_ERROR', payload: undefined });
       } catch (error) {
-        dispatch({ type: 'SET_ERROR', payload: error.message });
+        console.error('Failed to load restaurants:', error);
+        dispatch({ type: 'SET_ERROR', payload: error.message || 'Failed to load restaurants' });
       } finally {
         dispatch({ type: 'SET_LOADING', payload: false });
       }
@@ -118,14 +113,14 @@ export const AppProvider = ({ children }) => {
 
   const checkout = async ({ restaurantId, restaurantName }) => {
     if (!state.user) return;
-    const restaurant = state.restaurants.find((r) => r.id === restaurantId);
+    const restaurant = state.restaurants.find((r) => (r.id || r._id) === restaurantId);
     if (!restaurant) return;
 
     const items = state.cart.filter((item) => item.restaurantId === restaurantId);
     if (!items.length) return;
 
     const subtotal = calculateSubtotal(items);
-    const coinSnapshot = state.user.coinBalances.reduce((acc, c) => {
+    const coinSnapshot = (state.user.coinBalances || []).reduce((acc, c) => {
       acc[c.restaurantId] = c.coins;
       return acc;
     }, {});
@@ -135,25 +130,30 @@ export const AppProvider = ({ children }) => {
     const coinDelta = earned - spent;
     const newCoins = Math.max(0, (coinSnapshot[restaurantId] ?? 0) + coinDelta);
 
-    const order = await api.postOrder({
-      restaurantId,
-      restaurantName,
-      total: subtotal,
-      items: items.map((item) => ({
-        menuItemId: item.menuItem.id,
-        name: item.menuItem.name,
-        price: item.menuItem.price,
-        quantity: item.quantity,
-        restaurantId: item.restaurantId,
-        isRedeemed: item.isRedeemed,
-      })),
-      coinDelta,
-    });
+    try {
+      const order = await userApi.createOrder({
+        restaurantId,
+        restaurantName,
+        total: subtotal,
+        items: items.map((item) => ({
+          menuItemId: item.menuItem._id || item.menuItem.id,
+          name: item.menuItem.name,
+          price: item.menuItem.price,
+          quantity: item.quantity,
+          restaurantId: item.restaurantId,
+          isRedeemed: item.isRedeemed,
+        })),
+        coinDelta,
+      });
 
-    dispatch({ type: 'UPDATE_COINS', payload: { restaurantId, coins: newCoins } });
-    dispatch({ type: 'CLEAR_CART' });
-    dispatch({ type: 'SET_ORDERS', payload: [order, ...state.orders] });
-    return order;
+      dispatch({ type: 'UPDATE_COINS', payload: { restaurantId, coins: newCoins } });
+      dispatch({ type: 'CLEAR_CART' });
+      dispatch({ type: 'SET_ORDERS', payload: [order, ...(state.orders || [])] });
+      return order;
+    } catch (error) {
+      console.error('Checkout failed:', error);
+      throw error;
+    }
   };
 
   const value = useMemo(

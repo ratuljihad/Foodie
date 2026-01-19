@@ -12,6 +12,7 @@ import { RestaurantListPage } from './pages/RestaurantListPage';
 import { FoodDetailsPage } from './pages/FoodDetailsPage';
 import { SearchPage } from './pages/SearchPage';
 import { CartPage } from './pages/CartPage';
+import { CheckoutPage } from './pages/CheckoutPage';
 import { OrdersPage } from './pages/OrdersPage';
 import { OrderTrackingPage } from './pages/OrderTrackingPage';
 import { UserProfilePage } from './pages/UserProfilePage';
@@ -84,6 +85,16 @@ const App = () => (
               <ProtectedRoute requireRole="user">
                 <Layout>
                   <CartPage />
+                </Layout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/checkout"
+            element={
+              <ProtectedRoute requireRole="user">
+                <Layout>
+                  <CheckoutPage />
                 </Layout>
               </ProtectedRoute>
             }

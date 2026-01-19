@@ -1,14 +1,12 @@
 import { Link, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '../context/AuthContext';
-
-const links = [
-  { to: '/', label: 'Home' },
-  { to: '/orders', label: 'Orders' },
-];
+import { LanguageToggle } from './LanguageToggle';
 
 export const Navbar = () => {
   const { isAuthenticated, user, logout, loading } = useAuth();
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   const handleLogout = async () => {
     await logout();
@@ -22,9 +20,9 @@ export const Navbar = () => {
         <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3">
           <div className="flex items-center gap-2 text-lg font-semibold text-brand-700">
             <span className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-brand-100 text-brand-700">🍽️</span>
-            Foodie
+            KhaiKhai
           </div>
-          <div className="text-sm text-slate-500">Loading...</div>
+          <div className="text-sm text-slate-500">{t('common.loading')}</div>
         </div>
       </header>
     );
@@ -34,17 +32,16 @@ export const Navbar = () => {
     <header className="glass-nav sticky top-0 z-50">
       <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-4 sm:px-6 lg:px-8">
         <Link to="/" className="flex items-center gap-2 text-xl font-bold tracking-tight text-slate-900">
-          <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-brand-500 to-accent-500 text-white shadow-lg">F</span>
-          Foodie
+          <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-brand-500 to-accent-500 text-white shadow-lg">K</span>
+          KhaiKhai
         </Link>
         <nav className="hidden items-center gap-6 md:flex">
-          {/* Public Links */}
           {(!user || user.role === 'user') && (
             <Link
               to="/restaurants"
               className="text-sm font-medium text-slate-600 transition-colors hover:text-brand-600"
             >
-              Browse Restaurants
+              {t('nav.restaurants')}
             </Link>
           )}
 
@@ -56,31 +53,28 @@ export const Navbar = () => {
                     to="/restaurant/dashboard"
                     className="text-sm font-medium text-slate-600 transition-colors hover:text-brand-600"
                   >
-                    Dashboard
+                    {t('nav.dashboard')}
                   </Link>
                   <Link
                     to="/restaurant/foods"
                     className="text-sm font-medium text-slate-600 transition-colors hover:text-brand-600"
                   >
-                    Manage Menu
+                    {t('nav.manageMenu')}
                   </Link>
                 </>
               ) : (
                 <>
-                  {links.map((link) => (
-                    <Link
-                      key={link.to}
-                      to={link.to}
-                      className="text-sm font-medium text-slate-600 transition-colors hover:text-brand-600"
-                    >
-                      {link.label}
-                    </Link>
-                  ))}
+                  <Link to="/" className="text-sm font-medium text-slate-600 transition-colors hover:text-brand-600">
+                    {t('nav.home')}
+                  </Link>
+                  <Link to="/orders" className="text-sm font-medium text-slate-600 transition-colors hover:text-brand-600">
+                    {t('nav.orders')}
+                  </Link>
                   <Link
                     to="/user/dashboard"
                     className="text-sm font-medium text-slate-600 transition-colors hover:text-brand-600"
                   >
-                    Dashboard
+                    {t('nav.dashboard')}
                   </Link>
                 </>
               )}
@@ -88,6 +82,7 @@ export const Navbar = () => {
           ) : null}
         </nav>
         <div className="flex items-center gap-4">
+          <LanguageToggle />
           {isAuthenticated ? (
             <>
               <Link
@@ -100,7 +95,7 @@ export const Navbar = () => {
                 onClick={handleLogout}
                 className="rounded-full bg-slate-100 px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-200 focus:outline-none focus:ring-2 focus:ring-brand-500"
               >
-                Logout
+                {t('nav.logout')}
               </button>
             </>
           ) : (
@@ -109,13 +104,13 @@ export const Navbar = () => {
                 to="/login"
                 className="rounded-md px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-brand-500"
               >
-                Sign In
+                {t('nav.login')}
               </Link>
               <Link
                 to="/register"
                 className="rounded-full bg-brand-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-brand-700 focus:outline-none focus:ring-2 focus:ring-brand-500"
               >
-                Sign Up
+                {t('nav.signup')}
               </Link>
             </>
           )}

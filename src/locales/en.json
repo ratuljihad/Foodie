@@ -1,0 +1,60 @@
+{
+    "search": {
+        "placeholder": "Search for restaurants, cuisines, and dishes",
+        "button": "Search",
+        "results": {
+            "restaurants": "Restaurants",
+            "dishes": "Dishes",
+            "noResults": "No results found",
+            "searching": "Searching..."
+        }
+    },
+    "nav": {
+        "home": "Home",
+        "orders": "Orders",
+        "restaurants": "Browse Restaurants",
+        "login": "Sign In",
+        "signup": "Sign Up",
+        "logout": "Logout",
+        "dashboard": "Dashboard",
+        "manageMenu": "Manage Menu",
+        "profile": "Profile"
+    },
+    "hero": {
+        "title": "Dining,",
+        "titleSuffix": "Reimagined.",
+        "subtitle": "Order from the best local restaurants, earn coins with every bite, and unlock exclusive freebies.",
+        "badge": "🚀 KhaiKhai Rewards are here"
+    },
+    "footer": {
+        "copyright": "All rights reserved.",
+        "company": {
+            "title": "Company",
+            "about": "About Us",
+            "careers": "Careers",
+            "blog": "KhaiKhai Blog",
+            "business": "For Business"
+        },
+        "contact": {
+            "title": "Contact",
+            "help": "Help Center",
+            "faq": "FAQs",
+            "partner": "Partner with Us",
+            "download": "Download App"
+        },
+        "legal": {
+            "title": "Legal",
+            "terms": "Terms & Conditions",
+            "privacy": "Privacy Policy",
+            "policy": "Human Rights Policy",
+            "refund": "Refund Policy"
+        },
+        "locations": {
+            "title": "Locations",
+            "dhaka": "Dhaka",
+            "chittagong": "Chittagong",
+            "sylhet": "Sylhet",
+            "rajshahi": "Rajshahi"
+        }
+    }
+}

@@ -33,14 +33,12 @@ const orderSchema = new mongoose.Schema(
       type: String,
       default: '',
     },
+    customerPhone: {
+      type: String,
+      default: '',
+    },
     items: [
-      {
-        menuItemId: String,
-        name: String,
-        price: Number,
-        quantity: Number,
-        isRedeemed: { type: Boolean, default: false },
-      },
+      // ... same as before
     ],
     total: {
       type: Number,
@@ -57,9 +55,14 @@ const orderSchema = new mongoose.Schema(
       default: OrderStatus.PENDING,
       index: true,
     },
+    paymentMethod: {
+      type: String,
+      enum: ['cod', 'card'],
+      default: 'cod',
+    },
     deliveryAddress: {
       type: String,
-      default: '',
+      required: true,
     },
     notes: {
       type: String,

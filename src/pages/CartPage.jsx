@@ -4,6 +4,7 @@ import { CartItemRow } from '../components/CartItemRow';
 import { PageHeader } from '../components/PageHeader';
 import { useAppActions, useAppState } from '../context/AppContext';
 import { calculateCoinDelta, calculateSubtotal } from '../utils/coin';
+import { formatPrice } from '../utils/currency';
 
 export const CartPage = () => {
   const { cart, restaurants, user } = useAppState();
@@ -23,13 +24,23 @@ export const CartPage = () => {
   }, [cart, restaurants]);
 
   const handleCheckout = async (restaurantId, restaurantName) => {
+    if (!user) {
+      setStatus('You must be logged in to checkout.');
+      // Optional: Redirect to login or show modal
+      return;
+    }
+
     setStatus('Processing order...');
-    const order = await checkout({ restaurantId, restaurantName });
-    if (order) {
-      setStatus('Order placed! Redirecting to orders…');
-      setTimeout(() => navigate('/orders'), 800);
-    } else {
-      setStatus('Unable to checkout. Please try again.');
+    try {
+      const order = await checkout({ restaurantId, restaurantName });
+      if (order) {
+        setStatus('Order placed! Redirecting to orders…');
+        setTimeout(() => navigate('/orders'), 800);
+      }
+    } catch (err) {
+      console.error('Checkout error:', err);
+      // Display the actual error message from the backend if available
+      setStatus(err.message || 'Unable to checkout. Please try again.');
     }
   };
 
@@ -62,7 +73,7 @@ export const CartPage = () => {
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div>
                 <h2 className="text-xl font-semibold text-slate-900">{data.restaurantName}</h2>
-                <p className="text-sm text-slate-600">Subtotal ${subtotal.toFixed(2)}</p>
+                <p className="text-sm text-slate-600">Subtotal {formatPrice(subtotal)}</p>
               </div>
               <div className="rounded-xl bg-slate-50 px-4 py-2 text-sm text-slate-700">
                 Coins now: {coinSnapshot[restaurantId] ?? 0} · Earn {earned} this order · Spend {spent} · After: {netCoins}
@@ -79,16 +90,15 @@ export const CartPage = () => {
                 threshold amount.
               </div>
               <button
-                onClick={() => handleCheckout(restaurantId, data.restaurantName)}
-                className="rounded-lg bg-brand-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-brand-700 focus:outline-none focus:ring-2 focus:ring-brand-500"
+                onClick={() => navigate('/checkout', { state: { restaurantId, restaurantName: data.restaurantName } })}
+                className="rounded-lg bg-orange-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-orange-500"
               >
-                Checkout ${subtotal.toFixed(2)}
+                Proceed to Checkout
               </button>
             </div>
           </section>
         );
       })}
-      {status && <p className="text-sm text-slate-700">{status}</p>}
     </div>
   );
 };

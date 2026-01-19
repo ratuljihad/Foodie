@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import { nextRewardProgress } from '../utils/coin';
 import { useAppState } from '../context/AppContext';
+import { formatPrice } from '../utils/currency';
 
 export const RestaurantCard = ({ restaurant }) => {
   const { user } = useAppState();
@@ -8,7 +9,7 @@ export const RestaurantCard = ({ restaurant }) => {
   const coins = restaurantId ? user?.coinBalances?.find((c) => c.restaurantId === restaurantId)?.coins ?? 0 : 0;
   const { remaining, progress } = nextRewardProgress(coins, restaurant?.coinThreshold || 100);
 
-  const thumbnailUrl = restaurant?.thumbnail 
+  const thumbnailUrl = restaurant?.thumbnail
     ? (restaurant.thumbnail.startsWith('http') ? restaurant.thumbnail : `http://localhost:3001${restaurant.thumbnail}`)
     : null;
 
@@ -45,7 +46,7 @@ export const RestaurantCard = ({ restaurant }) => {
             <p className="text-sm text-slate-600 line-clamp-2">{restaurant.description}</p>
           )}
           <div className="flex items-center gap-2 text-xs font-medium text-slate-600">
-            <span className="rounded-full bg-slate-100 px-2 py-1">Coins: {restaurant?.coinRate || 5}/$</span>
+            <span className="rounded-full bg-slate-100 px-2 py-1">Coins: {restaurant?.coinRate || 5}/{formatPrice(1)}</span>
             <span className="rounded-full bg-slate-100 px-2 py-1">Redeem @ {restaurant?.coinThreshold || 100}</span>
           </div>
           <div className="mt-auto">

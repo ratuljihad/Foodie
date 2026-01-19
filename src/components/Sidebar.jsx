@@ -19,10 +19,10 @@ export const Sidebar = () => {
         {/* Logo/Header */}
         <div className="flex items-center gap-3 border-b border-slate-200 px-6 py-5">
           <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-orange-500 text-white text-xl font-bold">
-            F
+            K
           </div>
           <div>
-            <h1 className="text-lg font-bold text-slate-900">Foodie</h1>
+            <h1 className="text-lg font-bold text-slate-900">KhaiKhai</h1>
             <p className="text-xs text-slate-500">Restaurant Dashboard</p>
           </div>
         </div>
@@ -41,10 +41,9 @@ export const Sidebar = () => {
                 <NavLink
                   to={item.path}
                   className={({ isActive }) =>
-                    `flex items-center gap-3 rounded-lg px-4 py-3 text-sm font-medium transition-colors ${
-                      isActive
-                        ? 'bg-orange-50 text-orange-600'
-                        : 'text-slate-700 hover:bg-slate-50 hover:text-slate-900'
+                    `flex items-center gap-3 rounded-lg px-4 py-3 text-sm font-medium transition-colors ${isActive
+                      ? 'bg-orange-50 text-orange-600'
+                      : 'text-slate-700 hover:bg-slate-50 hover:text-slate-900'
                     }`
                   }
                 >

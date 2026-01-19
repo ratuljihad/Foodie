@@ -1,18 +1,22 @@
-import { useMemo, useState } from 'react';
+import { useState, useMemo } from 'react';
 import { Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { RestaurantCard } from '../components/RestaurantCard';
+import { SearchBar } from '../components/SearchBar';
 import { useAppState } from '../context/AppContext';
 import { PageHeader } from '../components/PageHeader';
+import { formatPrice } from '../utils/currency';
 
 export const HomePage = () => {
   const { user, restaurants, loading, error } = useAppState();
   const [search, setSearch] = useState('');
   const [cuisine, setCuisine] = useState('all');
+  const { t } = useTranslation();
 
   const offers = [
     {
       title: '20% off on your first order',
-      description: 'Use code WELCOME20 at checkout. Min $25.',
+      description: `Use code WELCOME20 at checkout. Min ${formatPrice(25)}.`,
       badge: 'Limited',
     },
     {
@@ -22,7 +26,7 @@ export const HomePage = () => {
     },
     {
       title: 'Zero delivery fee tonight',
-      description: 'Applies to Umami Street orders over $30.',
+      description: `Applies to Umami Street orders over ${formatPrice(30)}.`,
       badge: 'Delivery',
     },
   ];
@@ -44,21 +48,18 @@ export const HomePage = () => {
       <section className="relative overflow-hidden rounded-3xl bg-gradient-premium px-8 py-16 text-white shadow-premium sm:px-12 sm:py-24">
         <div className="relative z-10 max-w-2xl">
           <div className="inline-block rounded-full bg-white/20 px-4 py-1.5 text-sm font-semibold text-white backdrop-blur-md">
-            🚀 Foodie Rewards are here
+            {t('hero.badge')}
           </div>
           <h1 className="mt-6 text-4xl font-extrabold tracking-tight sm:text-5xl lg:text-6xl">
-            Dining, <span className="text-transparent bg-clip-text bg-gradient-to-r from-accent-100 to-white">Reimagined.</span>
+            {t('hero.title')} <span className="text-transparent bg-clip-text bg-gradient-to-r from-accent-100 to-white">{t('hero.titleSuffix')}</span>
           </h1>
           <p className="mt-6 text-lg text-brand-100 sm:text-xl">
-            Order from the best local restaurants, earn coins with every bite, and unlock exclusive freebies.
+            {t('hero.subtitle')}
           </p>
-          <div className="mt-8 flex gap-4">
-            <Link
-              to="/restaurants"
-              className="rounded-xl bg-white px-8 py-3.5 text-base font-bold text-brand-600 shadow-lg transition-transform hover:scale-105"
-            >
-              Explore Restaurants
-            </Link>
+          <div className="mt-8 flex flex-col gap-4 sm:flex-row sm:items-center">
+            <div className="w-full max-w-lg">
+              <SearchBar />
+            </div>
             {!user && (
               <Link
                 to="/login"

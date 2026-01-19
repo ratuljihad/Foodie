@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 import { PageHeader } from '../components/PageHeader';
 import { useAppState } from '../context/AppContext';
 import { userApi } from '../api/userClient';
+import { formatPrice } from '../utils/currency';
 
 const ORDER_STATUSES = {
   pending: { label: 'Pending', color: 'bg-yellow-100 text-yellow-800', icon: '⏳' },
@@ -21,9 +22,6 @@ export const OrdersPage = () => {
 
   useEffect(() => {
     fetchOrders();
-    // Poll for order updates every 10 seconds
-    const interval = setInterval(fetchOrders, 10000);
-    return () => clearInterval(interval);
   }, []);
 
   const fetchOrders = async () => {
@@ -97,7 +95,7 @@ export const OrdersPage = () => {
                     <p className="text-sm text-slate-600">{format(new Date(order.createdAt), 'PP p')}</p>
                   </div>
                   <div className="text-right">
-                    <p className="text-base font-semibold text-slate-900">${order.total?.toFixed(2)}</p>
+                    <p className="text-base font-semibold text-slate-900">{formatPrice(order.total)}</p>
                     {order.coinDelta !== 0 && (
                       <p className="text-sm text-orange-600">
                         Coins {order.coinDelta >= 0 ? '+' : ''}{order.coinDelta}
@@ -112,7 +110,7 @@ export const OrdersPage = () => {
                         {item.name} × {item.quantity}
                         {item.isRedeemed && <span className="text-green-600 ml-2">(redeemed)</span>}
                       </span>
-                      <span>${((item.price || 0) * (item.quantity || 1)).toFixed(2)}</span>
+                      <span>{formatPrice((item.price || 0) * (item.quantity || 1))}</span>
                     </li>
                   ))}
                 </ul>

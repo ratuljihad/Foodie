@@ -34,7 +34,7 @@ export const OrderTrackingPage = () => {
         const orderData = await userApi.getOrder(id);
         const previousStatus = order?.status;
         setOrder(orderData);
-        
+
         // Show status update if status changed
         if (previousStatus && orderData.status !== previousStatus) {
           setStatusUpdate({
@@ -53,9 +53,6 @@ export const OrderTrackingPage = () => {
 
     if (id) {
       loadOrder();
-      // Poll for order updates every 5 seconds
-      const interval = setInterval(loadOrder, 5000);
-      return () => clearInterval(interval);
     }
   }, [id]);
 
@@ -87,9 +84,9 @@ export const OrderTrackingPage = () => {
 
   return (
     <div className="space-y-6">
-      <PageHeader 
+      <PageHeader
         title={`Order #${order._id?.toString().slice(-8) || order.id?.slice(-8) || 'N/A'}`}
-        subtitle="Track your order status" 
+        subtitle="Track your order status"
       />
 
       {/* Status Update Banner */}
@@ -123,22 +120,20 @@ export const OrderTrackingPage = () => {
             {STATUS_STEPS.map((step, index) => {
               const isActive = index <= currentStepIndex;
               const isCurrent = index === currentStepIndex;
-              
+
               return (
                 <div key={step.status} className="flex-1 flex flex-col items-center">
                   <div
-                    className={`w-10 h-10 rounded-full flex items-center justify-center font-semibold text-sm transition-all ${
-                      isActive
+                    className={`w-10 h-10 rounded-full flex items-center justify-center font-semibold text-sm transition-all ${isActive
                         ? 'bg-orange-500 text-white'
                         : 'bg-slate-200 text-slate-500'
-                    } ${isCurrent ? 'ring-4 ring-orange-200' : ''}`}
+                      } ${isCurrent ? 'ring-4 ring-orange-200' : ''}`}
                   >
                     {index + 1}
                   </div>
                   <span
-                    className={`text-xs font-medium mt-2 text-center ${
-                      isActive ? 'text-slate-900' : 'text-slate-500'
-                    }`}
+                    className={`text-xs font-medium mt-2 text-center ${isActive ? 'text-slate-900' : 'text-slate-500'
+                      }`}
                   >
                     {step.label}
                   </span>
@@ -146,7 +141,7 @@ export const OrderTrackingPage = () => {
               );
             })}
           </div>
-          
+
           {/* Progress Bar */}
           <div className="relative h-1 bg-slate-200 rounded-full">
             <div

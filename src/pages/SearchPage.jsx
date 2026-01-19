@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
 import { userApi } from '../api/userClient';
 import { PageHeader } from '../components/PageHeader';
+import { formatPrice } from '../utils/currency';
 
 export const SearchPage = () => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -175,7 +176,7 @@ export const SearchPage = () => {
                           </span>
                         )}
                       </div>
-                      <span className="text-lg font-bold text-slate-900">${food.price?.toFixed(2)}</span>
+                      <span className="text-lg font-bold text-slate-900">{formatPrice(food.price)}</span>
                     </div>
                     <p className="text-sm text-slate-600 mb-2 line-clamp-2">{food.description}</p>
                     <div className="flex items-center justify-between text-xs text-slate-500">

@@ -1,4 +1,5 @@
 import { useAppActions } from '../context/AppContext';
+import { formatPrice } from '../utils/currency';
 
 export const CartItemRow = ({ item, restaurant }) => {
   const { updateQty, removeFromCart } = useAppActions();
@@ -14,7 +15,7 @@ export const CartItemRow = ({ item, restaurant }) => {
         </div>
         <p className="text-sm text-slate-600">{item.menuItem.description}</p>
         <p className="text-sm font-semibold text-slate-800">
-          {item.isRedeemed ? 'Free' : `$${item.menuItem.price}`} · {restaurant?.name}
+          {item.isRedeemed ? 'Free' : formatPrice(item.menuItem.price)} · {restaurant?.name}
         </p>
       </div>
       <div className="flex items-center gap-3">

@@ -58,22 +58,29 @@ router.get('/:id', async (req, res) => {
 // Create order (users only)
 router.post('/', authorizeRoles('user'), async (req, res) => {
   try {
-    const { restaurantId, restaurantName, total, items, coinDelta, deliveryAddress, notes } = req.body;
+    // Debug log for incoming order
+    console.log('Creating order with body:', JSON.stringify(req.body, null, 2));
+
+    const { restaurantId, restaurantName, total, items, coinDelta, deliveryAddress, notes, customerName, customerPhone, paymentMethod } = req.body;
 
     if (!restaurantId || !total || !items || !Array.isArray(items)) {
       return res.status(400).json({ error: 'Invalid order data' });
     }
 
+    if (!deliveryAddress) {
+      return res.status(400).json({ error: 'Delivery address is required' });
+    }
+
     // Get user info from auth context (if available)
-    const customerName = req.user.name || '';
-    const customerEmail = req.user.email || '';
+    const userEmail = req.user.email || '';
 
     const order = new Order({
       userId: req.user.id,
       restaurantId,
       restaurantName: restaurantName || 'Unknown',
-      customerName,
-      customerEmail,
+      customerName: customerName || req.user.name || '',
+      customerEmail: userEmail,
+      customerPhone: customerPhone || '',
       items: items.map((item) => ({
         menuItemId: item.menuItemId || item.menuItem?.id || item.menuItem?._id,
         name: item.name,
@@ -84,15 +91,17 @@ router.post('/', authorizeRoles('user'), async (req, res) => {
       total: parseFloat(total),
       coinDelta: coinDelta || 0,
       status: OrderStatus.PENDING,
-      deliveryAddress: deliveryAddress || '',
+      deliveryAddress,
+      paymentMethod: paymentMethod || 'cod',
       notes: notes || '',
     });
 
     await order.save();
 
-    // UPDATE USER COINS (In-memory persistence)
+    // UPDATE USER COINS
     try {
-      const user = userModel.findById(req.user.id);
+      // Use the actual Mongoose User model
+      const user = await User.findById(req.user.id);
       if (user) {
         if (!user.coinBalances) user.coinBalances = [];
 
@@ -109,9 +118,12 @@ router.post('/', authorizeRoles('user'), async (req, res) => {
             coins: coinDelta || 0
           });
         }
+        // CRITICAL: Persist the user changes
+        await user.save();
       }
     } catch (err) {
       console.error('Failed to update user coins:', err);
+      // We don't fail the order if coin update fails, but we should log it
     }
 
     // Emit orderCreated event via Socket.io

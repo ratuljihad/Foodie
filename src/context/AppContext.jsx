@@ -1,4 +1,5 @@
 import { createContext, useContext, useEffect, useMemo, useReducer } from 'react';
+import { useAuth } from './AuthContext';
 import { userApi } from '../api/userClient';
 import { calculateCoinDelta, calculateSubtotal } from '../utils/coin';
 
@@ -12,7 +13,6 @@ const initialState = {
 };
 
 const STORAGE_KEY = 'food-app-cart';
-const USER_STORAGE_KEY = 'food-app-user';
 
 const reducer = (state, action) => {
   switch (action.type) {
@@ -26,8 +26,8 @@ const reducer = (state, action) => {
       const existing = state.cart.find((item) => item.id === action.payload.id);
       const updated = existing
         ? state.cart.map((item) =>
-            item.id === action.payload.id ? { ...item, quantity: item.quantity + action.payload.quantity } : item,
-          )
+          item.id === action.payload.id ? { ...item, quantity: item.quantity + action.payload.quantity } : item,
+        )
         : [...state.cart, action.payload];
       return { ...state, cart: updated };
     }
@@ -47,8 +47,8 @@ const reducer = (state, action) => {
       const existing = state.user.coinBalances.find((c) => c.restaurantId === action.payload.restaurantId);
       const coinBalances = existing
         ? state.user.coinBalances.map((c) =>
-            c.restaurantId === action.payload.restaurantId ? { ...c, coins: action.payload.coins } : c,
-          )
+          c.restaurantId === action.payload.restaurantId ? { ...c, coins: action.payload.coins } : c,
+        )
         : [...state.user.coinBalances, { restaurantId: action.payload.restaurantId, coins: action.payload.coins }];
       return { ...state, user: { ...state.user, coinBalances } };
     }
@@ -68,15 +68,17 @@ const AppDispatchContext = createContext(null);
 
 export const AppProvider = ({ children }) => {
   const [state, dispatch] = useReducer(reducer, initialState);
+  const { user: authUser } = useAuth();
+
+  // Sync AuthContext user to AppState
+  useEffect(() => {
+    dispatch({ type: 'SET_USER', payload: authUser });
+  }, [authUser]);
 
   useEffect(() => {
     const storedCart = localStorage.getItem(STORAGE_KEY);
     if (storedCart) {
       dispatch({ type: 'LOAD_CART', payload: JSON.parse(storedCart) });
-    }
-    const storedUser = localStorage.getItem(USER_STORAGE_KEY);
-    if (storedUser) {
-      dispatch({ type: 'SET_USER', payload: JSON.parse(storedUser) });
     }
   }, []);
 
@@ -101,23 +103,22 @@ export const AppProvider = ({ children }) => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(state.cart));
   }, [state.cart]);
 
-  useEffect(() => {
-    if (state.user) {
-      localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(state.user));
-    }
-  }, [state.user]);
+
 
   const addToCart = (item) => dispatch({ type: 'ADD_TO_CART', payload: item });
   const updateQty = (id, quantity) => dispatch({ type: 'UPDATE_CART_QTY', payload: { id, quantity } });
   const removeFromCart = (id) => dispatch({ type: 'REMOVE_FROM_CART', payload: { id } });
 
-  const checkout = async ({ restaurantId, restaurantName }) => {
-    if (!state.user) return;
+  const checkout = async (orderData) => {
+    const { restaurantId, restaurantName } = orderData;
+    if (!state.user) throw new Error('You must be logged in to checkout');
+
+    // Ensure restaurants are loaded
     const restaurant = state.restaurants.find((r) => (r.id || r._id) === restaurantId);
-    if (!restaurant) return;
+    if (!restaurant) throw new Error('Restaurant not found');
 
     const items = state.cart.filter((item) => item.restaurantId === restaurantId);
-    if (!items.length) return;
+    if (!items.length) throw new Error('Cart is empty for this restaurant');
 
     const subtotal = calculateSubtotal(items);
     const coinSnapshot = (state.user.coinBalances || []).reduce((acc, c) => {
@@ -132,8 +133,7 @@ export const AppProvider = ({ children }) => {
 
     try {
       const order = await userApi.createOrder({
-        restaurantId,
-        restaurantName,
+        ...orderData,
         total: subtotal,
         items: items.map((item) => ({
           menuItemId: item.menuItem._id || item.menuItem.id,
@@ -163,7 +163,7 @@ export const AppProvider = ({ children }) => {
       removeFromCart,
       checkout,
     }),
-    [],
+    [state],
   );
 
   return (

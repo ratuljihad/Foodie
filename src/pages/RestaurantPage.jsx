@@ -4,6 +4,7 @@ import { userApi } from '../api/userClient';
 import { MenuItemCard } from '../components/MenuItemCard';
 import { useAppState } from '../context/AppContext';
 import { nextRewardProgress } from '../utils/coin';
+import { formatPrice } from '../utils/currency';
 
 export const RestaurantPage = () => {
   const { id } = useParams();
@@ -106,7 +107,7 @@ export const RestaurantPage = () => {
                 <span>🕒</span> ETA {restaurant.eta || '30-40 mins'}
               </div>
               <div className="flex items-center gap-1.5 rounded-full bg-accent-500 px-3 py-1 shadow-sm">
-                <span>🪙</span> Earn {restaurant.coinRate || 5} coins/$
+                <span>🪙</span> Earn {restaurant.coinRate || 5} coins/{formatPrice(1)}
               </div>
             </div>
           </div>

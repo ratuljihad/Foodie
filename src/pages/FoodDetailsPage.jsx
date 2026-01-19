@@ -3,6 +3,7 @@ import { useParams, useNavigate, Link } from 'react-router-dom';
 import { userApi } from '../api/userClient';
 import { useAppActions, useAppState } from '../context/AppContext';
 import { PageHeader } from '../components/PageHeader';
+import { formatPrice } from '../utils/currency';
 
 export const FoodDetailsPage = () => {
   const { id } = useParams();
@@ -60,7 +61,7 @@ export const FoodDetailsPage = () => {
     navigate('/cart');
   };
 
-  const imageUrl = food?.image 
+  const imageUrl = food?.image
     ? (food.image.startsWith('http') ? food.image : `http://localhost:3001${food.image}`)
     : null;
 
@@ -103,18 +104,18 @@ export const FoodDetailsPage = () => {
 
   return (
     <div className="space-y-6">
-      <PageHeader 
-        title={food.name} 
-        subtitle={restaurant?.name || 'Food Details'} 
+      <PageHeader
+        title={food.name}
+        subtitle={restaurant?.name || 'Food Details'}
       />
 
       <div className="grid gap-6 md:grid-cols-2">
         {/* Image */}
         <div className="rounded-xl border border-slate-200 bg-white overflow-hidden shadow-sm">
           {imageUrl ? (
-            <img 
-              src={imageUrl} 
-              alt={food.name} 
+            <img
+              src={imageUrl}
+              alt={food.name}
               className="w-full h-96 object-cover"
             />
           ) : (
@@ -129,7 +130,7 @@ export const FoodDetailsPage = () => {
           <div>
             <div className="flex items-start justify-between mb-2">
               <h1 className="text-3xl font-bold text-slate-900">{food.name}</h1>
-              <span className="text-3xl font-bold text-orange-600">${food.price?.toFixed(2)}</span>
+              <span className="text-3xl font-bold text-orange-600">{formatPrice(food.price)}</span>
             </div>
             {food.isSignature && (
               <span className="inline-block text-xs font-medium text-orange-600 bg-orange-50 px-2 py-1 rounded mb-2">
@@ -179,19 +180,19 @@ export const FoodDetailsPage = () => {
                 </button>
               </div>
               <span className="text-lg font-semibold text-slate-900 ml-auto">
-                Total: ${(food.price * quantity).toFixed(2)}
+                Total: {formatPrice(food.price * quantity)}
               </span>
             </div>
             <button
               onClick={handleAddToCart}
               className="w-full rounded-lg bg-orange-500 px-4 py-3 text-sm font-semibold text-white hover:bg-orange-600 transition-colors"
             >
-              Add to Cart
+              Order
             </button>
           </div>
         </div>
       </div>
-    </div>
+    </div >
   );
 };
 

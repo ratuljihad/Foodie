@@ -30,9 +30,6 @@ export const RestaurantOrdersPage = () => {
 
   useEffect(() => {
     fetchOrders();
-    // Poll for new orders every 10 seconds
-    const interval = setInterval(fetchOrders, 10000);
-    return () => clearInterval(interval);
   }, []);
 
   const fetchOrders = async () => {
@@ -61,8 +58,8 @@ export const RestaurantOrdersPage = () => {
     }
   };
 
-  const filteredOrders = statusFilter === 'all' 
-    ? orders 
+  const filteredOrders = statusFilter === 'all'
+    ? orders
     : orders.filter(order => order.status === statusFilter);
 
   const sortedOrders = [...filteredOrders].sort((a, b) => {
@@ -188,16 +185,16 @@ export const RestaurantOrdersPage = () => {
                     {nextOptions.map((nextStatus) => {
                       const nextStatusInfo = getStatusInfo(nextStatus);
                       const buttonText = nextStatus === 'preparing' ? 'Start Preparing' :
-                                        nextStatus === 'out_for_delivery' ? 'Mark Out for Delivery' :
-                                        nextStatus === 'delivered' ? 'Mark as Delivered' :
-                                        nextStatus === 'cancelled' ? 'Cancel Order' :
-                                        nextStatusInfo.label;
+                        nextStatus === 'out_for_delivery' ? 'Mark Out for Delivery' :
+                          nextStatus === 'delivered' ? 'Mark as Delivered' :
+                            nextStatus === 'cancelled' ? 'Cancel Order' :
+                              nextStatusInfo.label;
 
-                      const buttonClass = nextStatus === 'cancelled' 
+                      const buttonClass = nextStatus === 'cancelled'
                         ? 'rounded-lg border border-red-300 px-4 py-2 text-sm font-medium text-red-600 hover:bg-red-50 transition-colors'
                         : nextStatus === 'delivered'
-                        ? 'rounded-lg bg-green-500 px-4 py-2 text-sm font-medium text-white hover:bg-green-600 transition-colors'
-                        : 'rounded-lg bg-orange-500 px-4 py-2 text-sm font-medium text-white hover:bg-orange-600 transition-colors';
+                          ? 'rounded-lg bg-green-500 px-4 py-2 text-sm font-medium text-white hover:bg-green-600 transition-colors'
+                          : 'rounded-lg bg-orange-500 px-4 py-2 text-sm font-medium text-white hover:bg-orange-600 transition-colors';
 
                       return (
                         <button

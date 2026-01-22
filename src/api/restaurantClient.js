@@ -55,7 +55,7 @@ export const restaurantApi = {
   // Create menu item with optional image file
   createMenuItem: async (itemData, imageFile = null) => {
     const formData = new FormData();
-    
+
     // Add text fields
     Object.keys(itemData).forEach((key) => {
       if (key !== 'image' && key !== 'imageFile') {
@@ -85,7 +85,7 @@ export const restaurantApi = {
   // Update menu item with optional image file
   updateMenuItem: async (itemId, itemData, imageFile = null) => {
     const formData = new FormData();
-    
+
     // Add text fields
     Object.keys(itemData).forEach((key) => {
       if (key !== 'image' && key !== 'imageFile') {
@@ -125,8 +125,11 @@ export const restaurantApi = {
   },
 
   // Update order status
-  updateOrderStatus: async (orderId, status) => {
-    const response = await apiClient.put(`/restaurant/orders/${orderId}/status`, { status });
+  updateOrderStatus: async (orderId, status, cancellationReason = '') => {
+    const response = await apiClient.patch(`/orders/${orderId}/status`, {
+      status,
+      cancellationReason
+    });
     return response;
   },
 
@@ -135,18 +138,55 @@ export const restaurantApi = {
     return apiClient.get('/restaurant/dashboard');
   },
 
-  // Get restaurant coins
-  getCoins: async () => {
-    return apiClient.get('/restaurant/coins');
-  },
+
 
   // Get discounts
   getDiscounts: async () => {
-    return apiClient.get('/restaurant/discounts');
+    return apiClient.get('/discounts/restaurant');
   },
 
   // Create discount
   createDiscount: async (discountData) => {
-    return apiClient.post('/restaurant/discounts', discountData);
+    return apiClient.post('/discounts', discountData);
+  },
+
+  // Update discount
+  updateDiscount: async (discountId, discountData) => {
+    return apiClient.put(`/discounts/${discountId}`, discountData);
+  },
+
+  // Delete discount
+  deleteDiscount: async (discountId) => {
+    return apiClient.delete(`/discounts/${discountId}`);
+  },
+
+  // Upload restaurant image
+  uploadImage: async (imageFile) => {
+    const formData = new FormData();
+    formData.append('restaurantImage', imageFile);
+
+    const token = localStorage.getItem('accessToken');
+    const response = await axios.post(`${API_BASE_URL}/restaurants/upload-image`, formData, {
+      headers: {
+        Authorization: token ? `Bearer ${token}` : '',
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+    return response.data;
+  },
+
+  // Upload restaurant logo
+  uploadLogo: async (logoFile) => {
+    const formData = new FormData();
+    formData.append('logo', logoFile);
+
+    const token = localStorage.getItem('accessToken');
+    const response = await axios.post(`${API_BASE_URL}/restaurants/upload-logo`, formData, {
+      headers: {
+        Authorization: token ? `Bearer ${token}` : '',
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+    return response.data;
   },
 };

@@ -32,7 +32,7 @@ router.get('/:id', async (req, res) => {
 // Search foods (public)
 router.get('/', async (req, res) => {
   try {
-    const { search, restaurantId, category } = req.query;
+    const { search, restaurantId, category, country } = req.query;
     const query = {};
 
     if (restaurantId) {
@@ -41,6 +41,10 @@ router.get('/', async (req, res) => {
 
     if (category) {
       query.category = category;
+    }
+
+    if (country) {
+      query.country = country;
     }
 
     if (search) {

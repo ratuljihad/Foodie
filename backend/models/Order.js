@@ -1,12 +1,18 @@
 import mongoose from 'mongoose';
 
-// Order status enum
 export const OrderStatus = {
   PENDING: 'pending',
   PREPARING: 'preparing',
+  READY: 'ready',
   OUT_FOR_DELIVERY: 'out_for_delivery',
   DELIVERED: 'delivered',
   CANCELLED: 'cancelled',
+};
+
+export const PaymentStatus = {
+  PENDING: 'pending',
+  PAID: 'paid',
+  FAILED: 'failed',
 };
 
 const orderSchema = new mongoose.Schema(
@@ -45,10 +51,6 @@ const orderSchema = new mongoose.Schema(
       required: true,
       min: 0,
     },
-    coinDelta: {
-      type: Number,
-      default: 0,
-    },
     status: {
       type: String,
       enum: Object.values(OrderStatus),
@@ -57,8 +59,13 @@ const orderSchema = new mongoose.Schema(
     },
     paymentMethod: {
       type: String,
-      enum: ['cod', 'card'],
+      enum: ['cod', 'online', 'bkash', 'nagad', 'card'],
       default: 'cod',
+    },
+    paymentStatus: {
+      type: String,
+      enum: Object.values(PaymentStatus),
+      default: PaymentStatus.PENDING,
     },
     deliveryAddress: {
       type: String,
@@ -67,6 +74,15 @@ const orderSchema = new mongoose.Schema(
     notes: {
       type: String,
       default: '',
+    },
+    cancellationReason: {
+      type: String,
+      default: '',
+    },
+    discount: {
+      code: String,
+      amount: Number,
+      id: mongoose.Schema.Types.ObjectId,
     },
   },
   {

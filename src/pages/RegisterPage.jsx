@@ -13,6 +13,7 @@ export const RegisterPage = () => {
     // Restaurant-specific fields
     address: '',
     cuisine: '',
+    country: '',
   });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -52,6 +53,7 @@ export const RegisterPage = () => {
       if (role === 'restaurant') {
         submitData.address = formData.address || undefined;
         submitData.cuisine = formData.cuisine || undefined;
+        submitData.country = formData.country;
       }
 
       await register(submitData, role);
@@ -185,6 +187,31 @@ export const RegisterPage = () => {
                     className="w-full rounded-lg border border-slate-300 px-4 py-2 focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500"
                     placeholder="Desi food, Chinese,Italian, Mexican, etc."
                   />
+                </div>
+
+                <div>
+                  <label htmlFor="country" className="block text-sm font-medium text-slate-700 mb-2">
+                    Country
+                  </label>
+                  <select
+                    id="country"
+                    name="country"
+                    value={formData.country}
+                    onChange={handleChange}
+                    required
+                    className="w-full rounded-lg border border-slate-300 px-4 py-2 focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500"
+                  >
+                    <option value="">Select Country</option>
+                    <option value="Bangladesh">Bangladesh</option>
+                    <option value="India">India</option>
+                    <option value="Italy">Italy</option>
+                    <option value="China">China</option>
+                    <option value="Thailand">Thailand</option>
+                    <option value="USA">USA</option>
+                    <option value="UK">UK</option>
+                    <option value="Mexico">Mexico</option>
+                    <option value="Japan">Japan</option>
+                  </select>
                 </div>
               </>
             )}

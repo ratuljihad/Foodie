@@ -71,10 +71,13 @@ export const Footer = () => {
 
                 <div className="mt-12 border-t border-slate-200 pt-8">
                     <div className="flex flex-col items-center justify-between gap-4 md:flex-row">
-                        <div className="flex items-center gap-2 text-lg font-bold text-slate-900">
-                            <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-brand-500 to-accent-500 text-white shadow-md text-sm">K</span>
-                            KhaiKhai
-                        </div>
+                        <Link to="/" className="flex items-center gap-2 transition-opacity hover:opacity-90">
+                            <img
+                                src="/assets/logo.png"
+                                alt="KhaiKhai Logo"
+                                className="h-16 w-auto object-contain"
+                            />
+                        </Link>
                         <p className="text-sm text-slate-500 text-center md:text-left">
                             © {currentYear} KhaiKhai Technologies. {t('footer.copyright')}
                         </p>

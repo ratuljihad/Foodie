@@ -6,8 +6,6 @@ export const restaurants = [
     rating: 4.7,
     cuisine: 'Indian',
     eta: '25-35 min',
-    coinRate: 8,
-    coinThreshold: 120,
     description: 'Modern Indian kitchen focused on seasonal spices.',
     highlights: ['Tandoor specials', 'Family style', 'Spicy options'],
   },
@@ -18,8 +16,6 @@ export const restaurants = [
     rating: 4.5,
     cuisine: 'Asian',
     eta: '20-30 min',
-    coinRate: 6,
-    coinThreshold: 100,
     description: 'Pan-Asian street food with bold flavors.',
     highlights: ['Bao & dumplings', 'Rice bowls', 'Bubble tea'],
   },
@@ -30,8 +26,6 @@ export const restaurants = [
     rating: 4.8,
     cuisine: 'Italian',
     eta: '30-40 min',
-    coinRate: 7,
-    coinThreshold: 110,
     description: 'Seasonal Italian with handmade pasta and wood-fired pizza.',
     highlights: ['Neapolitan pizza', 'Fresh pasta', 'Natural wine'],
   },
@@ -128,11 +122,6 @@ export let user = {
   id: 'u1',
   name: 'Alex Rivera',
   tier: 'Gold',
-  coinBalances: [
-    { restaurantId: 'r1', coins: 80 },
-    { restaurantId: 'r2', coins: 40 },
-    { restaurantId: 'r3', coins: 95 },
-  ],
 };
 
 export let orders = [
@@ -147,7 +136,6 @@ export let orders = [
       { menuItemId: 'm7', name: 'Margherita Pizza', price: 15, quantity: 2, restaurantId: 'r3' },
       { menuItemId: 'm9', name: 'Tiramisu', price: 8, quantity: 1, restaurantId: 'r3' },
     ],
-    coinDelta: 320,
   },
 ];
 
@@ -160,7 +148,6 @@ export const restaurantUsers = [
     role: 'restaurant',
     restaurantId: 'r1',
     restaurantName: 'Saffron Garden',
-    restaurantCoins: 15, // Restaurant earns coins from orders
   },
   {
     id: 'rest2',
@@ -169,7 +156,6 @@ export const restaurantUsers = [
     role: 'restaurant',
     restaurantId: 'r2',
     restaurantName: 'Umami Street',
-    restaurantCoins: 8,
   },
   {
     id: 'rest3',
@@ -178,7 +164,6 @@ export const restaurantUsers = [
     role: 'restaurant',
     restaurantId: 'r3',
     restaurantName: 'Coastal Italian',
-    restaurantCoins: 12,
   },
 ];
 
@@ -214,11 +199,6 @@ export const resetMockData = () => {
     id: 'u1',
     name: 'Alex Rivera',
     tier: 'Gold',
-    coinBalances: [
-      { restaurantId: 'r1', coins: 80 },
-      { restaurantId: 'r2', coins: 40 },
-      { restaurantId: 'r3', coins: 95 },
-    ],
   };
 
   orders = [
@@ -232,7 +212,6 @@ export const resetMockData = () => {
         { menuItemId: 'm7', name: 'Margherita Pizza', price: 15, quantity: 2, restaurantId: 'r3' },
         { menuItemId: 'm9', name: 'Tiramisu', price: 8, quantity: 1, restaurantId: 'r3' },
       ],
-      coinDelta: 320,
     },
   ];
 };

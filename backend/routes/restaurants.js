@@ -1,13 +1,18 @@
 import express from 'express';
 import { Restaurant } from '../models/Restaurant.js';
 import { authenticateToken, authorizeRoles } from '../middleware/auth.js';
+import { upload } from '../middleware/upload.js';
 
 const router = express.Router();
 
 // Get all restaurants (public)
 router.get('/', async (req, res) => {
   try {
-    const restaurants = await Restaurant.find().select('-password').sort({ createdAt: -1 });
+    const { country } = req.query;
+    const query = {};
+    if (country) query.country = country;
+
+    const restaurants = await Restaurant.find(query).select('-password').sort({ createdAt: -1 });
     res.json(restaurants);
   } catch (error) {
     console.error('Get restaurants error:', error);
@@ -40,16 +45,21 @@ router.put('/profile', authenticateToken, authorizeRoles('restaurant'), async (r
       return res.status(404).json({ error: 'Restaurant not found' });
     }
 
-    const { name, phone, address, cuisine, description, coinRate, coinThreshold } = req.body;
+    const { name, phone, address, cuisine, country, description, image, thumbnail, gallery, logo, logoStatus, logoSettings } = req.body;
 
     // Update fields if provided
     if (name) restaurant.name = name;
     if (phone) restaurant.phone = phone;
     if (address) restaurant.address = address;
     if (cuisine) restaurant.cuisine = cuisine;
+    if (country) restaurant.country = country;
     if (description) restaurant.description = description;
-    if (coinRate !== undefined) restaurant.coinRate = Number(coinRate);
-    if (coinThreshold !== undefined) restaurant.coinThreshold = Number(coinThreshold);
+    if (image !== undefined) restaurant.image = image;
+    if (thumbnail !== undefined) restaurant.thumbnail = thumbnail;
+    if (gallery !== undefined) restaurant.gallery = gallery;
+    if (logo !== undefined) restaurant.logo = logo;
+    if (logoStatus !== undefined) restaurant.logoStatus = logoStatus;
+    if (logoSettings !== undefined) restaurant.logoSettings = logoSettings;
 
     await restaurant.save();
 
@@ -59,6 +69,36 @@ router.put('/profile', authenticateToken, authorizeRoles('restaurant'), async (r
     res.json({ restaurant: restaurantObj });
   } catch (error) {
     console.error('Update profile error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// Upload profile image
+router.post('/upload-image', authenticateToken, authorizeRoles('restaurant'), upload.single('restaurantImage'), async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ error: 'No file uploaded' });
+    }
+
+    const imagePath = `/uploads/restaurants/${req.file.filename}`;
+    res.json({ imagePath });
+  } catch (error) {
+    console.error('Image upload error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// Upload logo
+router.post('/upload-logo', authenticateToken, authorizeRoles('restaurant'), upload.single('logo'), async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ error: 'No file uploaded' });
+    }
+
+    const logoPath = `/uploads/logos/${req.file.filename}`;
+    res.json({ logoPath });
+  } catch (error) {
+    console.error('Logo upload error:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 });

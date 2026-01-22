@@ -1,6 +1,7 @@
 import express from 'express';
 import bcrypt from 'bcryptjs';
 import { User } from '../models/User.js';
+import { Order, OrderStatus } from '../models/Order.js';
 import { authenticateToken, authorizeRoles } from '../middleware/auth.js';
 
 const router = express.Router();
@@ -15,7 +16,16 @@ router.get('/profile', async (req, res) => {
         if (!user) {
             return res.status(404).json({ error: 'User not found' });
         }
-        res.json(user);
+
+        // Calculate total spent on successful orders
+        const orders = await Order.find({ userId: req.user.id, status: OrderStatus.DELIVERED });
+        const totalSpent = orders.reduce((sum, order) => sum + (order.total || 0), 0);
+
+        const userObj = user.toObject();
+        userObj.totalSpent = totalSpent;
+        userObj.id = user._id;
+
+        res.json(userObj);
     } catch (error) {
         console.error('Get profile error:', error);
         res.status(500).json({ error: 'Internal server error' });
@@ -25,7 +35,7 @@ router.get('/profile', async (req, res) => {
 // Update current user profile
 router.put('/profile', async (req, res) => {
     try {
-        const { name, phone, password } = req.body;
+        const { name, phone, password, currency } = req.body;
 
         // Find user
         const user = await User.findById(req.user.id);
@@ -36,6 +46,7 @@ router.put('/profile', async (req, res) => {
         // Update fields
         if (name) user.name = name;
         if (phone !== undefined) user.phone = phone;
+        if (currency) user.currency = currency;
 
         // Handle password update if provided
         if (password) {

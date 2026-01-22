@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { PageHeader } from '../../components/PageHeader';
 import { restaurantApi } from '../../api/restaurantClient';
+import { formatPrice } from '../../utils/currency';
 
 export const RestaurantDashboardPage = () => {
   const { user } = useAuth();
@@ -42,11 +43,11 @@ export const RestaurantDashboardPage = () => {
 
   return (
     <div className="space-y-6">
-      <PageHeader 
-        title="Dashboard" 
-        subtitle={`Welcome back, ${user?.name || 'Restaurant'}!`} 
+      <PageHeader
+        title="Dashboard"
+        subtitle={`Welcome back, ${user?.name || 'Restaurant'}!`}
       />
-      
+
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
         {/* Stats Cards */}
         <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
@@ -68,7 +69,7 @@ export const RestaurantDashboardPage = () => {
             <div>
               <p className="text-sm font-medium text-slate-600">Revenue</p>
               <p className="text-2xl font-bold text-slate-900 mt-1">
-                ${(dashboardData?.revenue || 0).toFixed(2)}
+                {formatPrice(dashboardData?.revenue || 0)}
               </p>
             </div>
             <div className="rounded-lg bg-green-100 p-3">
@@ -89,19 +90,6 @@ export const RestaurantDashboardPage = () => {
           </div>
         </div>
 
-        <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-slate-600">Restaurant Coins</p>
-              <p className="text-2xl font-bold text-orange-600 mt-1">
-                {dashboardData?.restaurantCoins || 0}
-              </p>
-            </div>
-            <div className="rounded-lg bg-orange-100 p-3">
-              <span className="text-2xl">🪙</span>
-            </div>
-          </div>
-        </div>
       </div>
 
       {/* Quick Actions */}
@@ -168,7 +156,7 @@ export const RestaurantDashboardPage = () => {
                   </p>
                 </div>
                 <div className="text-right">
-                  <p className="font-semibold text-slate-900">${order.total?.toFixed(2)}</p>
+                  <p className="font-semibold text-slate-900">{formatPrice(order.total)}</p>
                   <p className="text-xs text-slate-500">{order.status || 'pending'}</p>
                 </div>
               </div>

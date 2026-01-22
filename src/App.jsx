@@ -21,10 +21,8 @@ import { RestaurantDashboardPage } from './pages/restaurant/RestaurantDashboardP
 import { ManageFoodsPage } from './pages/restaurant/ManageFoodsPage';
 import { RestaurantOrdersPage } from './pages/restaurant/RestaurantOrdersPage';
 import { RestaurantProfilePage } from './pages/restaurant/RestaurantProfilePage';
-import { RestaurantCoinsPage } from './pages/restaurant/RestaurantCoinsPage';
 import { RestaurantDiscountsPage } from './pages/restaurant/RestaurantDiscountsPage';
 import { UserDashboardPage } from './pages/user/UserDashboardPage';
-import { UserCoinsPage } from './pages/user/UserCoinsPage';
 
 import { Toaster } from 'react-hot-toast';
 
@@ -141,16 +139,7 @@ const App = () => (
               </ProtectedRoute>
             }
           />
-          <Route
-            path="/user/coins"
-            element={
-              <ProtectedRoute requireRole="user">
-                <Layout>
-                  <UserCoinsPage />
-                </Layout>
-              </ProtectedRoute>
-            }
-          />
+
           <Route
             path="/user/orders"
             element={
@@ -213,16 +202,7 @@ const App = () => (
               </ProtectedRoute>
             }
           />
-          <Route
-            path="/restaurant/coins"
-            element={
-              <ProtectedRoute requireRole="restaurant">
-                <DashboardLayout>
-                  <RestaurantCoinsPage />
-                </DashboardLayout>
-              </ProtectedRoute>
-            }
-          />
+
           <Route
             path="/restaurant/discounts"
             element={

@@ -20,33 +20,16 @@ router.get('/dashboard', async (req, res) => {
         const totalOrders = orders.length;
         const revenue = orders.reduce((sum, order) => sum + (order.total || 0), 0);
 
-        // Get restaurant info for coins
-        const restaurant = await Restaurant.findById(restaurantId);
-        if (!restaurant) throw new Error('Restaurant not found');
-
         const recentOrders = orders.slice(0, 5); // Last 5 orders
 
         res.json({
             totalOrders,
             revenue,
-            restaurantCoins: restaurant.coins || 0, // Assuming coins property exists or is calculated
             recentOrders
         });
     } catch (error) {
         console.error('Dashboard stats error:', error);
         res.status(500).json({ error: 'Failed to load dashboard stats' });
-    }
-});
-
-// GET /coins - Restaurant Coins (mock implementation if not in schema)
-router.get('/coins', async (req, res) => {
-    try {
-        const restaurant = await Restaurant.findById(req.user.id);
-        if (!restaurant) return res.status(404).json({ error: 'Restaurant not found' });
-
-        res.json({ coins: restaurant.coins || 0, history: [] }); // Adding history as placeholder
-    } catch (error) {
-        res.status(500).json({ error: 'Failed to fetch coin data' });
     }
 });
 

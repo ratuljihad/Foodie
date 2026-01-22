@@ -6,7 +6,7 @@ export const api = {
   getRestaurants: () => delay([...restaurants]),
   getRestaurant: (id) => delay(restaurants.find((r) => r.id === id)),
   getMenu: (id) => delay(menuItems.filter((m) => m.restaurantId === id)),
-  getUser: () => delay({ ...user, coinBalances: [...user.coinBalances] }),
+  getUser: () => delay({ ...user }),
   getOrders: () => delay([...orders]),
   postOrder: async (order) => {
     const created = {
@@ -16,14 +16,8 @@ export const api = {
       total: order.total ?? 0,
       createdAt: new Date().toISOString(),
       items: order.items ?? [],
-      coinDelta: order.coinDelta ?? 0,
+      items: order.items ?? [],
     };
-    const balance = user.coinBalances.find((c) => c.restaurantId === created.restaurantId);
-    if (balance) {
-      balance.coins = Math.max(0, balance.coins + created.coinDelta);
-    } else {
-      user.coinBalances.push({ restaurantId: created.restaurantId, coins: Math.max(0, created.coinDelta) });
-    }
     orders.unshift(created);
     return delay(created);
   },

@@ -1,6 +1,7 @@
 import express from 'express';
 import { Order, OrderStatus } from '../models/Order.js';
 import { User } from '../models/User.js';
+import { Discount } from '../models/Discount.js';
 import { authenticateToken, authorizeRoles } from '../middleware/auth.js';
 
 const router = express.Router();
@@ -61,7 +62,7 @@ router.post('/', authorizeRoles('user'), async (req, res) => {
     // Debug log for incoming order
     console.log('Creating order with body:', JSON.stringify(req.body, null, 2));
 
-    const { restaurantId, restaurantName, total, items, coinDelta, deliveryAddress, notes, customerName, customerPhone, paymentMethod } = req.body;
+    const { restaurantId, restaurantName, total, items, deliveryAddress, notes, customerName, customerPhone, paymentMethod, discount } = req.body;
 
     if (!restaurantId || !total || !items || !Array.isArray(items)) {
       return res.status(400).json({ error: 'Invalid order data' });
@@ -89,42 +90,30 @@ router.post('/', authorizeRoles('user'), async (req, res) => {
         isRedeemed: item.isRedeemed || false,
       })),
       total: parseFloat(total),
-      coinDelta: coinDelta || 0,
       status: OrderStatus.PENDING,
+      paymentStatus: (paymentMethod === 'cod') ? 'pending' : 'pending', // Both start as pending, but could be 'paid' if gateway redirect happened immediately
       deliveryAddress,
       paymentMethod: paymentMethod || 'cod',
       notes: notes || '',
+      discount: discount ? {
+        code: discount.code,
+        amount: parseFloat(discount.amount),
+        id: discount.id
+      } : null,
     });
 
     await order.save();
 
-    // UPDATE USER COINS
-    try {
-      // Use the actual Mongoose User model
-      const user = await User.findById(req.user.id);
-      if (user) {
-        if (!user.coinBalances) user.coinBalances = [];
-
-        const existingIndex = user.coinBalances.findIndex(c => c.restaurantId === restaurantId);
-
-        if (existingIndex >= 0) {
-          // Update existing balance
-          const current = user.coinBalances[existingIndex].coins || 0;
-          user.coinBalances[existingIndex].coins = Math.max(0, current + (coinDelta || 0));
-        } else if ((coinDelta || 0) > 0) {
-          // Add new balance
-          user.coinBalances.push({
-            restaurantId,
-            coins: coinDelta || 0
-          });
-        }
-        // CRITICAL: Persist the user changes
-        await user.save();
+    // Increment discount used count if applied
+    if (discount && discount.id) {
+      try {
+        await Discount.findByIdAndUpdate(discount.id, { $inc: { usedCount: 1 } });
+      } catch (err) {
+        console.error('Failed to increment discount usage:', err);
       }
-    } catch (err) {
-      console.error('Failed to update user coins:', err);
-      // We don't fail the order if coin update fails, but we should log it
     }
+
+    // Emit orderCreated event via Socket.io
 
     // Emit orderCreated event via Socket.io
     const io = req.app.get('io');
@@ -149,10 +138,9 @@ router.post('/', authorizeRoles('user'), async (req, res) => {
   }
 });
 
-// Update order status (restaurants only)
 router.patch('/:id/status', authorizeRoles('restaurant'), async (req, res) => {
   try {
-    const { status } = req.body;
+    const { status, cancellationReason } = req.body;
 
     if (!status || !Object.values(OrderStatus).includes(status)) {
       return res.status(400).json({ error: 'Invalid status' });
@@ -168,6 +156,9 @@ router.patch('/:id/status', authorizeRoles('restaurant'), async (req, res) => {
     }
 
     order.status = status;
+    if (status === OrderStatus.CANCELLED && cancellationReason) {
+      order.cancellationReason = cancellationReason;
+    }
     await order.save();
 
     // Emit orderUpdated event via Socket.io
@@ -200,6 +191,25 @@ router.patch('/:id/status', authorizeRoles('restaurant'), async (req, res) => {
   } catch (error) {
     console.error('Update order status error:', error);
     res.status(500).json({ error: 'Failed to update order status' });
+  }
+});
+
+router.patch('/:id/payment-status', async (req, res) => {
+  try {
+    const { paymentStatus } = req.body;
+    const order = await Order.findById(req.params.id);
+
+    if (!order) return res.status(404).json({ error: 'Order not found' });
+    if (order.userId !== req.user.id && req.user.role !== 'restaurant') {
+      return res.status(403).json({ error: 'Unauthorized' });
+    }
+
+    order.paymentStatus = paymentStatus;
+    await order.save();
+
+    res.json(order);
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to update payment status' });
   }
 });
 

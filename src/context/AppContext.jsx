@@ -1,7 +1,7 @@
 import { createContext, useContext, useEffect, useMemo, useReducer } from 'react';
 import { useAuth } from './AuthContext';
 import { userApi } from '../api/userClient';
-import { calculateCoinDelta, calculateSubtotal } from '../utils/coin';
+import { calculateSubtotal } from '../utils/order';
 
 const initialState = {
   restaurants: [],
@@ -42,16 +42,7 @@ const reducer = (state, action) => {
       return { ...state, cart: state.cart.filter((item) => item.id !== action.payload.id) };
     case 'CLEAR_CART':
       return { ...state, cart: [] };
-    case 'UPDATE_COINS': {
-      if (!state.user) return state;
-      const existing = state.user.coinBalances.find((c) => c.restaurantId === action.payload.restaurantId);
-      const coinBalances = existing
-        ? state.user.coinBalances.map((c) =>
-          c.restaurantId === action.payload.restaurantId ? { ...c, coins: action.payload.coins } : c,
-        )
-        : [...state.user.coinBalances, { restaurantId: action.payload.restaurantId, coins: action.payload.coins }];
-      return { ...state, user: { ...state.user, coinBalances } };
-    }
+
     case 'SET_LOADING':
       return { ...state, loading: action.payload };
     case 'SET_ERROR':
@@ -121,16 +112,6 @@ export const AppProvider = ({ children }) => {
     if (!items.length) throw new Error('Cart is empty for this restaurant');
 
     const subtotal = calculateSubtotal(items);
-    const coinSnapshot = (state.user.coinBalances || []).reduce((acc, c) => {
-      acc[c.restaurantId] = c.coins;
-      return acc;
-    }, {});
-    const { earnings, redemptions } = calculateCoinDelta(items, state.restaurants);
-    const earned = earnings[restaurantId] ?? 0;
-    const spent = redemptions[restaurantId] ?? 0;
-    const coinDelta = earned - spent;
-    const newCoins = Math.max(0, (coinSnapshot[restaurantId] ?? 0) + coinDelta);
-
     try {
       const order = await userApi.createOrder({
         ...orderData,
@@ -143,10 +124,8 @@ export const AppProvider = ({ children }) => {
           restaurantId: item.restaurantId,
           isRedeemed: item.isRedeemed,
         })),
-        coinDelta,
       });
 
-      dispatch({ type: 'UPDATE_COINS', payload: { restaurantId, coins: newCoins } });
       dispatch({ type: 'CLEAR_CART' });
       dispatch({ type: 'SET_ORDERS', payload: [order, ...(state.orders || [])] });
       return order;

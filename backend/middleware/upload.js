@@ -15,26 +15,38 @@ if (!fs.existsSync(uploadsDir)) {
 // Configure storage
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    cb(null, uploadsDir);
+    // Determine folder based on fieldname or query
+    let folder = 'foods';
+    if (file.fieldname === 'restaurantImage' || req.query.type === 'restaurant') folder = 'restaurants';
+    if (file.fieldname === 'logo' || req.query.type === 'logo') folder = 'logos';
+
+    const destination = path.join(__dirname, `../uploads/${folder}`);
+
+    if (!fs.existsSync(destination)) {
+      fs.mkdirSync(destination, { recursive: true });
+    }
+    cb(null, destination);
   },
   filename: (req, file, cb) => {
-    // Generate unique filename: timestamp-random-originalname
     const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
     const ext = path.extname(file.originalname);
-    cb(null, `food-${uniqueSuffix}${ext}`);
+    let prefix = 'food';
+    if (file.fieldname === 'restaurantImage') prefix = 'restaurant';
+    if (file.fieldname === 'logo') prefix = 'logo';
+    cb(null, `${prefix}-${uniqueSuffix}${ext}`);
   },
 });
 
-// File filter - only allow images
+// File filter - only allow images including SVG
 const fileFilter = (req, file, cb) => {
-  const allowedTypes = /jpeg|jpg|png|gif|webp/;
+  const allowedTypes = /jpeg|jpg|png|gif|webp|svg/;
   const extname = allowedTypes.test(path.extname(file.originalname).toLowerCase());
-  const mimetype = allowedTypes.test(file.mimetype);
+  const mimetype = allowedTypes.test(file.mimetype) || file.mimetype === 'image/svg+xml';
 
   if (extname && mimetype) {
     cb(null, true);
   } else {
-    cb(new Error('Only image files are allowed (jpeg, jpg, png, gif, webp)'), false);
+    cb(new Error('Only image files are allowed (jpeg, jpg, png, gif, webp, svg)'), false);
   }
 };
 

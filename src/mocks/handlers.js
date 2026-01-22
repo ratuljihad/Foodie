@@ -11,11 +11,7 @@ const mockUsers = [
     name: 'Alex Rivera',
     role: 'user',
     tier: 'Gold',
-    coinBalances: [
-      { restaurantId: 'r1', coins: 80 },
-      { restaurantId: 'r2', coins: 40 },
-      { restaurantId: 'r3', coins: 95 },
-    ],
+
   },
   ...restaurantUsers.map((ru) => ({
     ...ru,
@@ -58,8 +54,8 @@ export const handlers = [
         role: foundUser.role,
         restaurantId: foundUser.restaurantId,
         restaurantName: foundUser.restaurantName,
-        coinBalances: foundUser.coinBalances,
-        restaurantCoins: foundUser.restaurantCoins,
+        restaurantId: foundUser.restaurantId,
+        restaurantName: foundUser.restaurantName,
       },
     });
   }),
@@ -73,7 +69,7 @@ export const handlers = [
       name,
       role: 'user',
       tier: 'Bronze',
-      coinBalances: [],
+
     };
     mockUsers.push(newUser);
 
@@ -97,7 +93,7 @@ export const handlers = [
         email: newUser.email,
         name: newUser.name,
         role: newUser.role,
-        coinBalances: newUser.coinBalances,
+
       },
     }, { status: 201 });
   }),
@@ -113,7 +109,7 @@ export const handlers = [
       role: 'restaurant',
       restaurantId,
       restaurantName,
-      restaurantCoins: 0,
+
     };
     mockUsers.push(newUser);
 
@@ -140,7 +136,7 @@ export const handlers = [
         role: newUser.role,
         restaurantId: newUser.restaurantId,
         restaurantName: newUser.restaurantName,
-        restaurantCoins: newUser.restaurantCoins,
+        restaurantName: newUser.restaurantName,
       },
     }, { status: 201 });
   }),
@@ -174,7 +170,7 @@ export const handlers = [
 
     const token = authHeader.substring(7);
     const decoded = decodeJWT(token);
-    
+
     if (!decoded) {
       return HttpResponse.json({ error: 'Invalid token' }, { status: 401 });
     }
@@ -192,8 +188,8 @@ export const handlers = [
         role: foundUser.role,
         restaurantId: foundUser.restaurantId,
         restaurantName: foundUser.restaurantName,
-        coinBalances: foundUser.coinBalances,
-        restaurantCoins: foundUser.restaurantCoins,
+        restaurantId: foundUser.restaurantId,
+        restaurantName: foundUser.restaurantName,
       },
     });
   }),
@@ -224,16 +220,7 @@ export const handlers = [
   // User endpoints
   http.get('/api/user', () => HttpResponse.json(user)),
 
-  http.get('/api/user/coins', ({ request }) => {
-    const authHeader = request.headers.get('Authorization');
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      return HttpResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-    const token = authHeader.substring(7);
-    const decoded = decodeJWT(token);
-    const foundUser = mockUsers.find((u) => u.id === decoded.id);
-    return HttpResponse.json({ coinBalances: foundUser?.coinBalances || [] });
-  }),
+
 
   // Orders endpoints
   http.get('/api/orders', ({ request }) => {
@@ -243,7 +230,7 @@ export const handlers = [
     }
     const token = authHeader.substring(7);
     const decoded = decodeJWT(token);
-    
+
     // Filter orders based on user role
     if (decoded.role === 'restaurant') {
       const restaurantOrders = orders.filter((o) => o.restaurantId === decoded.restaurantId);
@@ -271,25 +258,10 @@ export const handlers = [
       status: 'pending',
       createdAt: new Date().toISOString(),
       items: body.items ?? [],
-      coinDelta: body.coinDelta ?? 0,
+      items: body.items ?? [],
     };
 
-    if (created.restaurantId && typeof created.coinDelta === 'number') {
-      const balance = user.coinBalances.find((c) => c.restaurantId === created.restaurantId);
-      if (balance) {
-        balance.coins = Math.max(0, balance.coins + created.coinDelta);
-      } else {
-        user.coinBalances.push({ restaurantId: created.restaurantId, coins: Math.max(0, created.coinDelta) });
-      }
-    }
 
-    // Award restaurant coins (1 coin per completed order)
-    // Note: In real app, this would happen when order status changes to 'delivered'
-    // For now, we'll award coins immediately
-    const restaurantUser = mockUsers.find((u) => u.restaurantId === created.restaurantId);
-    if (restaurantUser) {
-      restaurantUser.restaurantCoins = (restaurantUser.restaurantCoins || 0) + 1;
-    }
 
     orders.unshift(created);
     return HttpResponse.json(created, { status: 201 });
@@ -303,7 +275,7 @@ export const handlers = [
     }
     const token = authHeader.substring(7);
     const decoded = decodeJWT(token);
-    
+
     if (decoded.role !== 'restaurant') {
       return HttpResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
@@ -315,27 +287,12 @@ export const handlers = [
     return HttpResponse.json({
       totalOrders: restaurantOrders.length,
       revenue: totalRevenue,
-      restaurantCoins: foundUser?.restaurantCoins || 0,
       activeDiscounts: discounts.filter((d) => d.restaurantId === decoded.restaurantId && d.isActive).length,
       recentOrders: restaurantOrders.slice(0, 5),
     });
   }),
 
-  http.get('/api/restaurant/coins', ({ request }) => {
-    const authHeader = request.headers.get('Authorization');
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      return HttpResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-    const token = authHeader.substring(7);
-    const decoded = decodeJWT(token);
-    
-    if (decoded.role !== 'restaurant') {
-      return HttpResponse.json({ error: 'Forbidden' }, { status: 403 });
-    }
 
-    const foundUser = mockUsers.find((u) => u.id === decoded.id);
-    return HttpResponse.json({ restaurantCoins: foundUser?.restaurantCoins || 0 });
-  }),
 
   // Discount endpoints
   http.get('/api/restaurant/discounts', ({ request }) => {
@@ -345,7 +302,7 @@ export const handlers = [
     }
     const token = authHeader.substring(7);
     const decoded = decodeJWT(token);
-    
+
     if (decoded.role !== 'restaurant') {
       return HttpResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
@@ -361,7 +318,7 @@ export const handlers = [
     }
     const token = authHeader.substring(7);
     const decoded = decodeJWT(token);
-    
+
     if (decoded.role !== 'restaurant') {
       return HttpResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
@@ -384,7 +341,7 @@ export const handlers = [
     }
     const token = authHeader.substring(7);
     const decoded = decodeJWT(token);
-    
+
     if (decoded.role !== 'restaurant') {
       return HttpResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
@@ -407,7 +364,7 @@ export const handlers = [
     }
     const token = authHeader.substring(7);
     const decoded = decodeJWT(token);
-    
+
     if (decoded.role !== 'restaurant') {
       return HttpResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
@@ -423,7 +380,7 @@ export const handlers = [
     }
     const token = authHeader.substring(7);
     const decoded = decodeJWT(token);
-    
+
     if (decoded.role !== 'restaurant') {
       return HttpResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
@@ -450,7 +407,7 @@ export const handlers = [
     }
     const token = authHeader.substring(7);
     const decoded = decodeJWT(token);
-    
+
     if (decoded.role !== 'restaurant') {
       return HttpResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
@@ -478,7 +435,7 @@ export const handlers = [
     }
     const token = authHeader.substring(7);
     const decoded = decodeJWT(token);
-    
+
     if (decoded.role !== 'restaurant') {
       return HttpResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
@@ -505,7 +462,7 @@ export const handlers = [
     }
     const token = authHeader.substring(7);
     const decoded = decodeJWT(token);
-    
+
     if (decoded.role !== 'restaurant') {
       return HttpResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
@@ -521,7 +478,7 @@ export const handlers = [
     }
     const token = authHeader.substring(7);
     const decoded = decodeJWT(token);
-    
+
     if (decoded.role !== 'restaurant') {
       return HttpResponse.json({ error: 'Forbidden' }, { status: 403 });
     }

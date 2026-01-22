@@ -74,10 +74,7 @@ export const userApi = {
     return apiClient.get(`/orders/${orderId}`);
   },
 
-  // Get user coins (requires authentication)
-  getCoins: async () => {
-    return apiClient.get('/user/coins');
-  },
+
 
   // Get user profile
   getProfile: async () => {

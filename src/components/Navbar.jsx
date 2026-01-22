@@ -31,9 +31,14 @@ export const Navbar = () => {
   return (
     <header className="glass-nav sticky top-0 z-50">
       <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-4 sm:px-6 lg:px-8">
-        <Link to="/" className="flex items-center gap-2 text-xl font-bold tracking-tight text-slate-900">
-          <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-brand-500 to-accent-500 text-white shadow-lg">K</span>
-          KhaiKhai
+        <Link to="/" className="flex items-center transition-transform hover:scale-[1.02] active:scale-[0.98]">
+          <div className="h-24 flex items-center py-2">
+            <img
+              src="/assets/logo.png"
+              alt="KhaiKhai - Pet bole aro chai"
+              className="h-full w-auto object-contain"
+            />
+          </div>
         </Link>
         <nav className="hidden items-center gap-6 md:flex">
           {(!user || user.role === 'user') && (

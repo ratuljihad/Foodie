@@ -35,6 +35,11 @@ const foodSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
+    country: {
+      type: String,
+      trim: true,
+      default: '',
+    },
   },
   {
     timestamps: true,

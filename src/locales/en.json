@@ -23,8 +23,8 @@
     "hero": {
         "title": "Dining,",
         "titleSuffix": "Reimagined.",
-        "subtitle": "Order from the best local restaurants, earn coins with every bite, and unlock exclusive freebies.",
-        "badge": "🚀 KhaiKhai Rewards are here"
+        "subtitle": "Order from the best local restaurants and enjoy every bite.",
+        "badge": "🚀 KhaiKhai is here"
     },
     "footer": {
         "copyright": "All rights reserved.",
@@ -56,5 +56,14 @@
             "sylhet": "Sylhet",
             "rajshahi": "Rajshahi"
         }
+    },
+    "cuisine": {
+        "title": "Browse by Cuisine",
+        "bangladeshi": "Bangladeshi",
+        "indian": "Indian",
+        "chinese": "Chinese",
+        "italian": "Italian",
+        "fastfood": "Fast Food",
+        "pizza": "Pizza"
     }
 }

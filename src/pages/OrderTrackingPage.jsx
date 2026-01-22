@@ -3,18 +3,35 @@ import { useParams, Link } from 'react-router-dom';
 import { format } from 'date-fns';
 import { userApi } from '../api/userClient';
 import { PageHeader } from '../components/PageHeader';
+import { formatPrice } from '../utils/currency';
 
 const ORDER_STATUSES = {
   pending: { label: 'Pending', color: 'bg-yellow-100 text-yellow-800', icon: '⏳' },
   preparing: { label: 'Preparing', color: 'bg-blue-100 text-blue-800', icon: '👨‍🍳' },
+  ready: { label: 'Food Ready', color: 'bg-indigo-100 text-indigo-800', icon: '🥘' },
   out_for_delivery: { label: 'Out for Delivery', color: 'bg-purple-100 text-purple-800', icon: '🚚' },
   delivered: { label: 'Delivered', color: 'bg-green-100 text-green-800', icon: '✅' },
   cancelled: { label: 'Cancelled', color: 'bg-red-100 text-red-800', icon: '❌' },
 };
 
+const PAYMENT_STATUSES = {
+  pending: { label: 'Pending', color: 'bg-yellow-100 text-yellow-800' },
+  paid: { label: 'Paid', color: 'bg-green-100 text-green-800' },
+  failed: { label: 'Failed', color: 'bg-red-100 text-red-800' },
+};
+
+const PAYMENT_METHODS = {
+  cod: 'Cash on Delivery',
+  bkash: 'bKash',
+  nagad: 'Nagad',
+  card: 'Credit/Debit Card',
+  online: 'Online Payment',
+};
+
 const STATUS_STEPS = [
   { status: 'pending', label: 'Order Placed' },
   { status: 'preparing', label: 'Preparing' },
+  { status: 'ready', label: 'Food Ready' },
   { status: 'out_for_delivery', label: 'Out for Delivery' },
   { status: 'delivered', label: 'Delivered' },
 ];
@@ -125,8 +142,8 @@ export const OrderTrackingPage = () => {
                 <div key={step.status} className="flex-1 flex flex-col items-center">
                   <div
                     className={`w-10 h-10 rounded-full flex items-center justify-center font-semibold text-sm transition-all ${isActive
-                        ? 'bg-orange-500 text-white'
-                        : 'bg-slate-200 text-slate-500'
+                      ? 'bg-orange-500 text-white'
+                      : 'bg-slate-200 text-slate-500'
                       } ${isCurrent ? 'ring-4 ring-orange-200' : ''}`}
                   >
                     {index + 1}
@@ -150,6 +167,18 @@ export const OrderTrackingPage = () => {
             />
           </div>
         </div>
+
+        {order.status === 'cancelled' && order.cancellationReason && (
+          <div className="mt-8 rounded-xl bg-red-50 p-4 border border-red-100">
+            <div className="flex gap-3">
+              <span className="text-xl">ℹ️</span>
+              <div>
+                <p className="text-sm font-bold text-red-900 uppercase tracking-wide">Cancellation Note from Restaurant</p>
+                <p className="text-sm text-red-700 mt-1 italic">"{order.cancellationReason}"</p>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Order Details */}
@@ -170,14 +199,14 @@ export const OrderTrackingPage = () => {
                   </p>
                 </div>
                 <p className="font-semibold text-slate-900">
-                  ${((item.price || 0) * (item.quantity || 1)).toFixed(2)}
+                  {formatPrice((item.price || 0) * (item.quantity || 1))}
                 </p>
               </li>
             ))}
           </ul>
           <div className="mt-4 pt-4 border-t border-slate-200 flex items-center justify-between">
             <span className="text-lg font-semibold text-slate-900">Total</span>
-            <span className="text-xl font-bold text-slate-900">${order.total?.toFixed(2)}</span>
+            <span className="text-xl font-bold text-slate-900">{formatPrice(order.total)}</span>
           </div>
         </div>
 
@@ -207,14 +236,19 @@ export const OrderTrackingPage = () => {
                 <dd className="text-sm text-slate-900">{order.deliveryAddress}</dd>
               </div>
             )}
-            {order.coinDelta !== 0 && (
-              <div>
-                <dt className="text-sm font-medium text-slate-600">Coins</dt>
-                <dd className="text-sm text-orange-600 font-semibold">
-                  {order.coinDelta > 0 ? '+' : ''}{order.coinDelta}
-                </dd>
-              </div>
-            )}
+            <div>
+              <dt className="text-sm font-medium text-slate-600">Payment Method</dt>
+              <dd className="text-sm text-slate-900">{PAYMENT_METHODS[order.paymentMethod] || order.paymentMethod}</dd>
+            </div>
+            <div>
+              <dt className="text-sm font-medium text-slate-600">Payment Status</dt>
+              <dd className="mt-1">
+                <span className={`px-2 py-1 rounded text-xs font-bold uppercase tracking-wider ${PAYMENT_STATUSES[order.paymentStatus]?.color || 'bg-slate-100'}`}>
+                  {PAYMENT_STATUSES[order.paymentStatus]?.label || order.paymentStatus || 'Pending'}
+                </span>
+              </dd>
+            </div>
+
           </dl>
         </div>
       </div>

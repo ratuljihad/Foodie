@@ -1,45 +1,42 @@
-import { useState, useMemo } from 'react';
-import { Link } from 'react-router-dom';
+import { useState, useMemo, useEffect } from 'react';
+import { Link, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { RestaurantCard } from '../components/RestaurantCard';
 import { SearchBar } from '../components/SearchBar';
+import { CuisineSection } from '../components/CuisineSection';
+import { DealsSection } from '../components/DealsSection';
 import { useAppState } from '../context/AppContext';
 import { PageHeader } from '../components/PageHeader';
 import { formatPrice } from '../utils/currency';
 
 export const HomePage = () => {
   const { user, restaurants, loading, error } = useAppState();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [search, setSearch] = useState('');
-  const [cuisine, setCuisine] = useState('all');
   const { t } = useTranslation();
 
-  const offers = [
-    {
-      title: '20% off on your first order',
-      description: `Use code WELCOME20 at checkout. Min ${formatPrice(25)}.`,
-      badge: 'Limited',
-    },
-    {
-      title: 'Free dessert at Coastal Italian',
-      description: 'Redeem once you hit 110 coins. Add to cart to apply.',
-      badge: 'Coins',
-    },
-    {
-      title: 'Zero delivery fee tonight',
-      description: `Applies to Umami Street orders over ${formatPrice(30)}.`,
-      badge: 'Delivery',
-    },
-  ];
+  const country = searchParams.get('country') || '';
+
+  const handleCountrySelect = (selectedCountry) => {
+    if (!selectedCountry) {
+      searchParams.delete('country');
+    } else {
+      searchParams.set('country', selectedCountry);
+    }
+    setSearchParams(searchParams);
+  };
+
+
 
   const filtered = useMemo(
     () =>
       restaurants.filter((r) => {
         const matchesSearch =
           r.name.toLowerCase().includes(search.toLowerCase()) || r.cuisine.toLowerCase().includes(search.toLowerCase());
-        const matchesCuisine = cuisine === 'all' || r.cuisine === cuisine;
-        return matchesSearch && matchesCuisine;
+        const matchesCountry = !country || r.country === country;
+        return matchesSearch && matchesCountry;
       }),
-    [restaurants, search, cuisine],
+    [restaurants, search, country],
   );
 
   return (
@@ -76,26 +73,12 @@ export const HomePage = () => {
         <div className="absolute bottom-0 right-0 h-80 w-80 rounded-full bg-brand-400/20 blur-3xl"></div>
       </section>
 
-      <section id="offers" className="space-y-6">
-        <div className="flex items-center justify-between">
-          <h2 className="text-2xl font-bold tracking-tight text-slate-900">Featured Offers</h2>
-          <Link to="/restaurants" className="text-sm font-semibold text-brand-600 hover:text-brand-700">View all deals →</Link>
-        </div>
-        <div className="grid gap-6 md:grid-cols-3">
-          {offers.map((offer) => (
-            <article key={offer.title} className="glass-panel hover-card-premium group relative rounded-2xl p-6 transition-all hover:bg-white/80">
-              <div className="mb-4 inline-flex items-center gap-2 rounded-full bg-brand-50 px-3 py-1">
-                <span className="text-xs font-bold uppercase tracking-wider text-brand-700">{offer.badge}</span>
-              </div>
-              <h3 className="text-lg font-bold text-slate-900 group-hover:text-brand-600 transition-colors">{offer.title}</h3>
-              <p className="mt-2 text-slate-600 leading-relaxed">{offer.description}</p>
-            </article>
-          ))}
-        </div>
-      </section>
+
+      {/* Cuisine Section */}
+      <CuisineSection />
 
       <section id="restaurants" className="space-y-6">
-        <PageHeader id="restaurants" title="Restaurants" subtitle="Browse and earn coins as you order." />
+        <PageHeader id="restaurants" title="Restaurants" subtitle="Browse our partner restaurants." />
         <div className="flex flex-wrap items-center gap-3 rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
           <input
             aria-label="Search restaurants"
@@ -105,14 +88,20 @@ export const HomePage = () => {
             className="w-full rounded-lg border border-slate-200 px-4 py-2 text-sm focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500 sm:w-72"
           />
           <select
-            value={cuisine}
-            onChange={(e) => setCuisine(e.target.value)}
+            value={country}
+            onChange={(e) => handleCountrySelect(e.target.value)}
             className="rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-700 focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500"
           >
-            <option value="all">All cuisines</option>
-            <option value="Indian">Indian</option>
-            <option value="Asian">Asian</option>
-            <option value="Italian">Italian</option>
+            <option value="">Select Country</option>
+            <option value="Bangladesh">Bangladesh</option>
+            <option value="India">India</option>
+            <option value="Italy">Italy</option>
+            <option value="China">China</option>
+            <option value="Thailand">Thailand</option>
+            <option value="USA">USA</option>
+            <option value="UK">UK</option>
+            <option value="Mexico">Mexico</option>
+            <option value="Japan">Japan</option>
           </select>
         </div>
         {loading && <p className="text-slate-600">Loading restaurants...</p>}
@@ -125,20 +114,7 @@ export const HomePage = () => {
         </div>
       </section>
 
-      <section id="coins" className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-        <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-          <div>
-            <h3 className="text-xl font-semibold text-slate-900">How coins work</h3>
-            <p className="text-sm text-slate-600">
-              Earn coins per restaurant based on their coin rate. When your balance hits the threshold, you can redeem any item
-              from that restaurant for free.
-            </p>
-          </div>
-          <div className="rounded-lg bg-slate-50 px-4 py-3 text-sm text-slate-700">
-            Tip: Add a signature item when you have enough coins to maximize value.
-          </div>
-        </div>
-      </section>
+
     </div>
   );
 };

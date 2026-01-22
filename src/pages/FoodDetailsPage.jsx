@@ -137,7 +137,14 @@ export const FoodDetailsPage = () => {
                 Signature Dish
               </span>
             )}
-            <p className="text-sm text-slate-500 mb-2">Category: {food.category}</p>
+            <div className="flex flex-wrap gap-3 items-center mb-2">
+              <p className="text-sm text-slate-500">Category: {food.category}</p>
+              {food.country && (
+                <p className="text-sm font-medium text-orange-600 bg-orange-50 px-2.5 py-1 rounded-full border border-orange-100 flex items-center gap-1.5">
+                  <span>🌍</span> Origin: {food.country}
+                </p>
+              )}
+            </div>
           </div>
 
           <div className="rounded-lg border border-slate-200 bg-slate-50 p-4">

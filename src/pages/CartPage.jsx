@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { CartItemRow } from '../components/CartItemRow';
 import { PageHeader } from '../components/PageHeader';
 import { useAppActions, useAppState } from '../context/AppContext';
-import { calculateCoinDelta, calculateSubtotal } from '../utils/coin';
+import { calculateSubtotal } from '../utils/order';
 import { formatPrice } from '../utils/currency';
 
 export const CartPage = () => {
@@ -55,28 +55,16 @@ export const CartPage = () => {
 
   return (
     <div className="space-y-6">
-      <PageHeader title="Cart" subtitle="Review your items, coins and redeem rewards." />
+      <PageHeader title="Cart" subtitle="Review your items and proceed to checkout." />
       {cartByRestaurant.map(([restaurantId, data]) => {
         const restaurant = restaurants.find((r) => r.id === restaurantId);
         const subtotal = calculateSubtotal(data.items);
-        const coinSnapshot =
-          user?.coinBalances.reduce((acc, c) => {
-            acc[c.restaurantId] = c.coins;
-            return acc;
-          }, {}) ?? {};
-        const { earnings, redemptions } = calculateCoinDelta(data.items, restaurants);
-        const earned = earnings[restaurantId] ?? 0;
-        const spent = redemptions[restaurantId] ?? 0;
-        const netCoins = (coinSnapshot[restaurantId] ?? 0) + earned - spent;
         return (
           <section key={restaurantId} className="space-y-4 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div>
                 <h2 className="text-xl font-semibold text-slate-900">{data.restaurantName}</h2>
                 <p className="text-sm text-slate-600">Subtotal {formatPrice(subtotal)}</p>
-              </div>
-              <div className="rounded-xl bg-slate-50 px-4 py-2 text-sm text-slate-700">
-                Coins now: {coinSnapshot[restaurantId] ?? 0} · Earn {earned} this order · Spend {spent} · After: {netCoins}
               </div>
             </div>
             <div className="space-y-3">
@@ -86,8 +74,7 @@ export const CartPage = () => {
             </div>
             <div className="flex flex-wrap items-center justify-between gap-3 border-t border-slate-200 pt-4">
               <div className="text-sm text-slate-700">
-                Coins earned are based on subtotal and restaurant coin rate. Redeemed items consume the restaurant
-                threshold amount.
+                Check your items and delivery address before proceeding.
               </div>
               <button
                 onClick={() => navigate('/checkout', { state: { restaurantId, restaurantName: data.restaurantName } })}

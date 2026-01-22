@@ -1,4 +1,4 @@
-import { NavLink } from 'react-router-dom';
+import { NavLink, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
 const menuItems = [
@@ -6,7 +6,6 @@ const menuItems = [
   { path: '/restaurant/foods', label: 'Manage Menu', icon: '🍔' },
   { path: '/restaurant/orders', label: 'Orders', icon: '📦' },
   { path: '/restaurant/discounts', label: 'Discounts', icon: '🎫' },
-  { path: '/restaurant/coins', label: 'Restaurant Coins', icon: '🪙' },
   { path: '/restaurant/profile', label: 'Profile', icon: '👤' },
 ];
 
@@ -16,16 +15,15 @@ export const Sidebar = () => {
   return (
     <aside className="fixed left-0 top-0 h-screen w-64 bg-white border-r border-slate-200 shadow-sm">
       <div className="flex h-full flex-col">
-        {/* Logo/Header */}
-        <div className="flex items-center gap-3 border-b border-slate-200 px-6 py-5">
-          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-orange-500 text-white text-xl font-bold">
-            K
+        <Link to="/" className="flex items-center gap-3 border-b border-slate-200 px-6 py-5 transition-opacity hover:opacity-90">
+          <div className="h-20 flex items-center">
+            <img
+              src="/assets/logo.png"
+              alt="KhaiKhai - Pet bole aro chai"
+              className="h-full w-auto object-contain"
+            />
           </div>
-          <div>
-            <h1 className="text-lg font-bold text-slate-900">KhaiKhai</h1>
-            <p className="text-xs text-slate-500">Restaurant Dashboard</p>
-          </div>
-        </div>
+        </Link>
 
         {/* Restaurant Info */}
         <div className="border-b border-slate-200 px-6 py-4">

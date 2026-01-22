@@ -7,29 +7,25 @@ import { PageHeader } from '../components/PageHeader';
 export const RestaurantListPage = () => {
   const { restaurants, loading, error } = useAppState();
   const [search, setSearch] = useState('');
-  const [cuisine, setCuisine] = useState('all');
+  const [country, setCountry] = useState('');
 
   const filtered = useMemo(
     () =>
       restaurants.filter((r) => {
         const matchesSearch =
-          r.name?.toLowerCase().includes(search.toLowerCase()) || 
+          r.name?.toLowerCase().includes(search.toLowerCase()) ||
           r.cuisine?.toLowerCase().includes(search.toLowerCase());
-        const matchesCuisine = cuisine === 'all' || r.cuisine === cuisine;
-        return matchesSearch && matchesCuisine;
+        const matchesCountry = !country || r.country === country;
+        return matchesSearch && matchesCountry;
       }),
-    [restaurants, search, cuisine],
+    [restaurants, search, country],
   );
 
-  const cuisines = useMemo(() => {
-    const uniqueCuisines = new Set(restaurants.map((r) => r.cuisine).filter(Boolean));
-    return Array.from(uniqueCuisines).sort();
-  }, [restaurants]);
 
   return (
     <div className="space-y-6">
-      <PageHeader title="Restaurants" subtitle="Browse and earn coins as you order." />
-      
+      <PageHeader title="Restaurants" subtitle="Browse our partner restaurants." />
+
       <div className="flex flex-wrap items-center gap-3 rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
         <input
           aria-label="Search restaurants"
@@ -39,16 +35,20 @@ export const RestaurantListPage = () => {
           className="w-full rounded-lg border border-slate-200 px-4 py-2 text-sm focus:border-orange-500 focus:outline-none focus:ring-2 focus:ring-orange-500 sm:w-72"
         />
         <select
-          value={cuisine}
-          onChange={(e) => setCuisine(e.target.value)}
+          value={country}
+          onChange={(e) => setCountry(e.target.value)}
           className="rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-700 focus:border-orange-500 focus:outline-none focus:ring-2 focus:ring-orange-500"
         >
-          <option value="all">All cuisines</option>
-          {cuisines.map((c) => (
-            <option key={c} value={c}>
-              {c}
-            </option>
-          ))}
+          <option value="">Select Country</option>
+          <option value="Bangladesh">Bangladesh</option>
+          <option value="India">India</option>
+          <option value="Italy">Italy</option>
+          <option value="China">China</option>
+          <option value="Thailand">Thailand</option>
+          <option value="USA">USA</option>
+          <option value="UK">UK</option>
+          <option value="Mexico">Mexico</option>
+          <option value="Japan">Japan</option>
         </select>
       </div>
 

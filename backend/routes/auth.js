@@ -46,7 +46,6 @@ router.post('/register/user', async (req, res) => {
       password: hashedPassword,
       name,
       phone: phone || '',
-      coinBalances: [],
     });
 
     await user.save();
@@ -77,10 +76,14 @@ router.post('/register/user', async (req, res) => {
 // Register Restaurant
 router.post('/register/restaurant', async (req, res) => {
   try {
-    const { email, password, name, phone, address, cuisine } = req.body;
+    const { email, password, name, phone, address, cuisine, country } = req.body;
 
     if (!email || !password || !name) {
       return res.status(400).json({ error: 'Email, password, and name are required' });
+    }
+
+    if (!country) {
+      return res.status(400).json({ error: 'Country is required for restaurant registration' });
     }
 
     // Check if restaurant already exists
@@ -100,6 +103,7 @@ router.post('/register/restaurant', async (req, res) => {
       phone: phone || '',
       address: address || '',
       cuisine: cuisine || '',
+      country,
     });
 
     await restaurant.save();

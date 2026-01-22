@@ -28,17 +28,15 @@ const restaurantSchema = new mongoose.Schema({
         type: String,
         default: 'Multi-cuisine',
     },
+    country: {
+        type: String,
+        required: true,
+        trim: true,
+        enum: ['Bangladesh', 'India', 'Italy', 'China', 'Thailand', 'USA', 'UK', 'Mexico', 'Japan'],
+    },
     description: {
         type: String,
         default: 'A great place to eat.',
-    },
-    coinRate: {
-        type: Number,
-        default: 5,
-    },
-    coinThreshold: {
-        type: Number,
-        default: 100,
     },
     rating: {
         type: Number,
@@ -50,6 +48,30 @@ const restaurantSchema = new mongoose.Schema({
     },
     image: {
         type: String,
+        default: '',
+    },
+    thumbnail: {
+        type: String,
+        default: '',
+    },
+    gallery: {
+        type: [String],
+        default: [],
+    },
+    logo: {
+        type: String,
+        default: '',
+    },
+    logoStatus: {
+        type: String,
+        enum: ['none', 'pending', 'approved', 'rejected'],
+        default: 'none',
+    },
+    logoSettings: {
+        width: { type: Number, default: 40 },
+        height: { type: Number, default: 40 },
+        x: { type: Number, default: 0 },
+        y: { type: Number, default: 0 },
     },
     createdAt: {
         type: Date,

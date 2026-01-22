@@ -11,6 +11,7 @@ import dashboardRoutes from './routes/dashboard.js';
 import foodRoutes from './routes/foods.js';
 import publicFoodRoutes from './routes/publicFoods.js';
 import userRoutes from './routes/users.js';
+import discountRoutes from './routes/discounts.js';
 import { authenticateToken } from './middleware/auth.js';
 import connectDB from './config/database.js';
 import { initializeSocket } from './socket/socketServer.js';
@@ -47,6 +48,7 @@ app.use('/api/restaurant', dashboardRoutes); // New dashboard routes
 app.use('/api/restaurants/menu', authenticateToken, foodRoutes); // Specific route FIRST
 app.use('/api/restaurants', restaurantRoutes); // Generic route LAST
 app.use('/api/orders', authenticateToken, orderRoutes);
+app.use('/api/discounts', discountRoutes);
 app.use('/api/foods', publicFoodRoutes); // Public routes for users
 
 // Health check

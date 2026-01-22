@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { userApi } from '../api/userClient';
 import { toast } from 'react-hot-toast';
+import { formatPrice } from '../utils/currency';
 
 export const UserProfilePage = () => {
     const { user, login } = useAuth(); // We might need to update user in context
@@ -9,7 +10,8 @@ export const UserProfilePage = () => {
         name: '',
         email: '',
         phone: '',
-        coinBalances: []
+        currency: 'BDT',
+        totalSpent: 0
     });
     const [isEditing, setIsEditing] = useState(false);
     const [loading, setLoading] = useState(true);
@@ -18,7 +20,8 @@ export const UserProfilePage = () => {
     // Form state
     const [formData, setFormData] = useState({
         name: '',
-        phone: ''
+        phone: '',
+        currency: 'BDT'
     });
 
     useEffect(() => {
@@ -31,7 +34,8 @@ export const UserProfilePage = () => {
             setProfile(data);
             setFormData({
                 name: data.name,
-                phone: data.phone || ''
+                phone: data.phone || '',
+                currency: data.currency || 'BDT'
             });
         } catch (error) {
             console.error('Failed to load profile:', error);
@@ -69,7 +73,7 @@ export const UserProfilePage = () => {
 
                 <div className="grid gap-6 md:grid-cols-3">
                     {/* Main Profile Card */}
-                    <div className="md:col-span-2">
+                    <div className="md:col-span-3">
                         <div className="glass-panel overflow-hidden rounded-2xl bg-white shadow-xl">
                             <div className="bg-gradient-premium px-6 py-8 text-white">
                                 <div className="flex items-center gap-4">
@@ -117,6 +121,19 @@ export const UserProfilePage = () => {
                                                 className="mt-1 block w-full rounded-lg border-slate-300 shadow-sm focus:border-brand-500 focus:ring-brand-500"
                                             />
                                         </div>
+                                        <div>
+                                            <label className="block text-sm font-medium text-slate-700">Display Currency</label>
+                                            <select
+                                                value={formData.currency}
+                                                onChange={(e) => setFormData({ ...formData, currency: e.target.value })}
+                                                className="mt-1 block w-full rounded-lg border-slate-300 shadow-sm focus:border-brand-500 focus:ring-brand-500"
+                                            >
+                                                <option value="BDT">BDT (৳)</option>
+                                                <option value="USD">USD ($)</option>
+                                                <option value="EUR">EUR (€)</option>
+                                                <option value="GBP">GBP (£)</option>
+                                            </select>
+                                        </div>
                                         <div className="flex justify-end gap-3 pt-4">
                                             <button
                                                 type="button"
@@ -150,6 +167,10 @@ export const UserProfilePage = () => {
                                                 <p className="mt-1 text-lg font-medium text-slate-900">{profile.phone || 'Not set'}</p>
                                             </div>
                                             <div>
+                                                <label className="block text-xs font-medium uppercase text-slate-400">Currency</label>
+                                                <p className="mt-1 text-lg font-medium text-slate-900">{profile.currency || 'BDT'}</p>
+                                            </div>
+                                            <div>
                                                 <label className="block text-xs font-medium uppercase text-slate-400">Joined</label>
                                                 <p className="mt-1 text-lg font-medium text-slate-900">
                                                     {new Date(profile.createdAt).toLocaleDateString()}
@@ -162,26 +183,7 @@ export const UserProfilePage = () => {
                         </div>
                     </div>
 
-                    {/* Side Card: Wallet Summary */}
-                    <div>
-                        <div className="glass-panel overflow-hidden rounded-2xl bg-white p-6 shadow-xl">
-                            <h3 className="mb-4 flex items-center gap-2 text-lg font-bold text-slate-900">
-                                <span className="text-xl">👛</span> Wallet Summary
-                            </h3>
-                            <div className="space-y-4">
-                                {profile.coinBalances?.length > 0 ? (
-                                    profile.coinBalances.map((balance, idx) => (
-                                        <div key={idx} className="flex justify-between border-b border-slate-100 pb-2 last:border-0">
-                                            <span className="text-sm font-medium text-slate-600">Restaurant ID: {balance.restaurantId.substring(0, 6)}...</span>
-                                            <span className="font-bold text-amber-500">{balance.coins} 🪙</span>
-                                        </div>
-                                    ))
-                                ) : (
-                                    <p className="text-sm text-slate-500">No coins earned yet.</p>
-                                )}
-                            </div>
-                        </div>
-                    </div>
+
                 </div>
             </div>
         </div>

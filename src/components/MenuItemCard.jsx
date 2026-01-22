@@ -1,6 +1,5 @@
 import { useNavigate } from 'react-router-dom';
 import { useAppActions, useAppState } from '../context/AppContext';
-import { canRedeem } from '../utils/coin';
 import { formatPrice } from '../utils/currency';
 
 export const MenuItemCard = ({ item, restaurant }) => {
@@ -8,9 +7,6 @@ export const MenuItemCard = ({ item, restaurant }) => {
   const { addToCart } = useAppActions();
   const { user, cart } = useAppState();
   const restaurantId = restaurant?.id || restaurant?._id;
-  const coins = restaurantId ? user?.coinBalances?.find((c) => c.restaurantId === restaurantId)?.coins ?? 0 : 0;
-  const coinsCommitted = cart.filter((c) => c.restaurantId === restaurantId && c.isRedeemed).length * (restaurant?.coinThreshold || 100);
-  const redeemable = canRedeem(Math.max(0, coins - coinsCommitted), restaurant?.coinThreshold || 100);
 
   const handleCardClick = (e) => {
     // Don't navigate if clicking on a button or interactive element
@@ -45,8 +41,9 @@ export const MenuItemCard = ({ item, restaurant }) => {
         {imageUrl ? (
           <img src={imageUrl} alt={item.name} className="h-full w-full object-cover transition group-hover:scale-105" />
         ) : (
-          <div className="h-full w-full flex items-center justify-center">
-            <span className="text-4xl">🍽️</span>
+          <div className="h-full w-full flex flex-col items-center justify-center bg-slate-50">
+            <span className="text-4xl text-slate-300">🍲</span>
+            <span className="mt-1 text-[10px] font-medium text-slate-400">Deliciousness Pending...</span>
           </div>
         )}
         {item.isSignature && (
@@ -63,16 +60,13 @@ export const MenuItemCard = ({ item, restaurant }) => {
           </div>
           <span className="rounded-full bg-slate-100 px-3 py-1 text-sm font-semibold text-slate-800">{formatPrice(item.price)}</span>
         </div>
-        <div className="mt-auto flex flex-wrap gap-2 text-xs font-medium text-slate-600">
-          <span className="rounded-full bg-slate-100 px-2 py-1">Coins: +{restaurant?.coinRate || 5}/{formatPrice(1)}</span>
-          {redeemable && (
-            <button
-              onClick={(e) => handleAdd(e, true)}
-              className="rounded-full border border-brand-500 px-3 py-1 text-brand-700 transition hover:bg-brand-50 focus:outline-none focus:ring-2 focus:ring-brand-500"
-            >
-              Redeem for free
-            </button>
+        <div className="mt-auto flex flex-wrap gap-2 text-[10px] font-bold uppercase tracking-wider">
+          {item.country && (
+            <span className="rounded-full bg-orange-50 px-2 py-0.5 text-orange-600 border border-orange-100">
+              🌍 {item.country}
+            </span>
           )}
+          <span className="rounded-full bg-slate-100 px-2 py-0.5 text-slate-600">Best Seller</span>
         </div>
 
       </div>

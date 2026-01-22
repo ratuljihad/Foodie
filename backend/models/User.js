@@ -8,7 +8,10 @@ const userSchema = new mongoose.Schema({
     },
     password: {
         type: String,
-        required: true,
+        required: function () {
+            // Password only required for local authentication
+            return this.authProvider === 'local';
+        },
     },
     name: {
         type: String,
@@ -21,22 +24,30 @@ const userSchema = new mongoose.Schema({
         type: String,
         default: 'user',
     },
-    coinBalances: [
-        {
-            restaurantId: {
-                type: String, // Storing as String to match frontend/ordering logic
-                required: true,
-            },
-            coins: {
-                type: Number,
-                default: 0,
-            },
-        },
-    ],
+    authProvider: {
+        type: String,
+        enum: ['local', 'google', 'facebook'],
+        default: 'local',
+    },
+    providerId: {
+        type: String,
+        sparse: true, // Allows null values while maintaining uniqueness for non-null values
+    },
+    profileImage: {
+        type: String,
+    },
+    currency: {
+        type: String,
+        default: 'BDT',
+    },
     createdAt: {
         type: Date,
         default: Date.now,
     },
 });
+
+// Compound index for social login uniqueness
+userSchema.index({ providerId: 1, authProvider: 1 }, { unique: true, sparse: true });
+
 
 export const User = mongoose.model('User', userSchema);

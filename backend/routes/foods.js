@@ -43,7 +43,7 @@ router.get('/:id', async (req, res) => {
 // Create new food item with optional image upload
 router.post('/', upload.single('image'), async (req, res) => {
   try {
-    const { name, price, description, category, isSignature } = req.body;
+    const { name, price, description, category, isSignature, country } = req.body;
 
     // Validate required fields
     if (!name || !price || !description || !category) {
@@ -67,6 +67,7 @@ router.post('/', upload.single('image'), async (req, res) => {
       category,
       image: imagePath,
       isSignature: isSignature === 'true' || isSignature === true,
+      country: country || '',
     });
 
     await food.save();
@@ -85,7 +86,7 @@ router.put('/:id', upload.single('image'), async (req, res) => {
       return res.status(404).json({ error: 'Food item not found' });
     }
 
-    const { name, price, description, category, isSignature } = req.body;
+    const { name, price, description, category, isSignature, country } = req.body;
 
     // Update fields
     if (name) food.name = name;
@@ -95,6 +96,7 @@ router.put('/:id', upload.single('image'), async (req, res) => {
     if (isSignature !== undefined) {
       food.isSignature = isSignature === 'true' || isSignature === true;
     }
+    if (country !== undefined) food.country = country;
 
     // Handle image update
     if (req.file) {

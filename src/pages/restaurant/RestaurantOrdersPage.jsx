@@ -3,19 +3,37 @@ import { format } from 'date-fns';
 import { PageHeader } from '../../components/PageHeader';
 import { useAuth } from '../../context/AuthContext';
 import { restaurantApi } from '../../api/restaurantClient';
+import { formatPrice } from '../../utils/currency';
+import { OrderCancelModal } from '../../components/OrderCancelModal';
 
 // Order status options
 const ORDER_STATUSES = {
-  pending: { label: 'Pending', color: 'bg-yellow-100 text-yellow-800', next: 'preparing' },
-  preparing: { label: 'Preparing', color: 'bg-blue-100 text-blue-800', next: 'out_for_delivery' },
+  pending: { label: 'Order Received', color: 'bg-yellow-100 text-yellow-800', next: 'preparing' },
+  preparing: { label: 'Preparing', color: 'bg-blue-100 text-blue-800', next: 'ready' },
+  ready: { label: 'Food Ready', color: 'bg-indigo-100 text-indigo-800', next: 'out_for_delivery' },
   out_for_delivery: { label: 'Out for Delivery', color: 'bg-purple-100 text-purple-800', next: 'delivered' },
-  delivered: { label: 'Delivered', color: 'bg-green-100 text-green-800', next: null },
+  delivered: { label: 'Completed', color: 'bg-green-100 text-green-800', next: null },
   cancelled: { label: 'Cancelled', color: 'bg-red-100 text-red-800', next: null },
+};
+
+const PAYMENT_METHODS = {
+  cod: 'Cash on Delivery',
+  bkash: 'bKash',
+  nagad: 'Nagad',
+  card: 'Credit/Debit Card',
+  online: 'Online Payment',
+};
+
+const PAYMENT_STATUSES = {
+  pending: { label: 'Pending', color: 'bg-yellow-100 text-yellow-800' },
+  paid: { label: 'Paid', color: 'bg-green-100 text-green-800' },
+  failed: { label: 'Failed', color: 'bg-red-100 text-red-800' },
 };
 
 const STATUS_TRANSITIONS = {
   pending: ['preparing', 'cancelled'],
-  preparing: ['out_for_delivery', 'cancelled'],
+  preparing: ['ready', 'cancelled'],
+  ready: ['out_for_delivery', 'cancelled'],
   out_for_delivery: ['delivered'],
   delivered: [],
   cancelled: [],
@@ -27,6 +45,7 @@ export const RestaurantOrdersPage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [statusFilter, setStatusFilter] = useState('all');
+  const [cancelModal, setCancelModal] = useState({ isOpen: false, orderId: null });
 
   useEffect(() => {
     fetchOrders();
@@ -46,16 +65,20 @@ export const RestaurantOrdersPage = () => {
     }
   };
 
-  const handleStatusChange = async (orderId, newStatus) => {
+  const handleStatusChange = async (orderId, newStatus, cancellationReason = '') => {
     try {
       setError(null);
-      await restaurantApi.updateOrderStatus(orderId, newStatus);
+      await restaurantApi.updateOrderStatus(orderId, newStatus, cancellationReason);
       // Refresh orders list
       await fetchOrders();
     } catch (err) {
       console.error('Failed to update order status:', err);
       setError(err.message || 'Failed to update order status');
     }
+  };
+
+  const handleCancelConfirm = async (orderId, reason) => {
+    await handleStatusChange(orderId, 'cancelled', reason);
   };
 
   const filteredOrders = statusFilter === 'all'
@@ -145,12 +168,15 @@ export const RestaurantOrdersPage = () => {
                     )}
                   </div>
                   <div className="text-right">
-                    <p className="text-xl font-bold text-slate-900">${order.total?.toFixed(2)}</p>
-                    {order.coinDelta !== 0 && (
-                      <p className="text-sm text-orange-600 mt-1">
-                        Coins: {order.coinDelta > 0 ? '+' : ''}{order.coinDelta}
+                    <p className="text-xl font-bold text-slate-900">{formatPrice(order.total)}</p>
+                    <div className="mt-2 space-y-1">
+                      <p className="text-xs font-medium text-slate-500 uppercase tracking-wider">
+                        Method: {PAYMENT_METHODS[order.paymentMethod] || order.paymentMethod}
                       </p>
-                    )}
+                      <span className={`inline-block px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-widest ${PAYMENT_STATUSES[order.paymentStatus]?.color || 'bg-slate-100'}`}>
+                        {PAYMENT_STATUSES[order.paymentStatus]?.label || order.paymentStatus || 'Pending'}
+                      </span>
+                    </div>
                   </div>
                 </div>
 
@@ -161,12 +187,9 @@ export const RestaurantOrdersPage = () => {
                       <li key={idx} className="flex items-center justify-between text-sm">
                         <span className="text-slate-700">
                           {item.name} × {item.quantity}
-                          {item.isRedeemed && (
-                            <span className="ml-2 text-xs text-green-600 font-medium">(Redeemed)</span>
-                          )}
                         </span>
                         <span className="text-slate-900 font-medium">
-                          ${((item.price || 0) * (item.quantity || 1)).toFixed(2)}
+                          {formatPrice((item.price || 0) * (item.quantity || 1))}
                         </span>
                       </li>
                     ))}
@@ -180,26 +203,42 @@ export const RestaurantOrdersPage = () => {
                   </div>
                 )}
 
+                {order.status === 'cancelled' && order.cancellationReason && (
+                  <div className="rounded-lg bg-red-50 p-3 mb-4">
+                    <p className="text-xs font-semibold text-red-800 uppercase tracking-wider mb-1">Reason for cancellation:</p>
+                    <p className="text-sm text-red-700 italic">"{order.cancellationReason}"</p>
+                  </div>
+                )}
+
                 {nextOptions.length > 0 && (
                   <div className="flex flex-wrap gap-2 pt-4 border-t border-slate-200">
                     {nextOptions.map((nextStatus) => {
                       const nextStatusInfo = getStatusInfo(nextStatus);
                       const buttonText = nextStatus === 'preparing' ? 'Start Preparing' :
-                        nextStatus === 'out_for_delivery' ? 'Mark Out for Delivery' :
-                          nextStatus === 'delivered' ? 'Mark as Delivered' :
-                            nextStatus === 'cancelled' ? 'Cancel Order' :
-                              nextStatusInfo.label;
+                        nextStatus === 'ready' ? 'Food Ready' :
+                          nextStatus === 'out_for_delivery' ? 'Mark Out for Delivery' :
+                            nextStatus === 'delivered' ? 'Order Completed' :
+                              nextStatus === 'cancelled' ? 'Cancel Order' :
+                                nextStatusInfo.label;
 
                       const buttonClass = nextStatus === 'cancelled'
                         ? 'rounded-lg border border-red-300 px-4 py-2 text-sm font-medium text-red-600 hover:bg-red-50 transition-colors'
                         : nextStatus === 'delivered'
-                          ? 'rounded-lg bg-green-500 px-4 py-2 text-sm font-medium text-white hover:bg-green-600 transition-colors'
-                          : 'rounded-lg bg-orange-500 px-4 py-2 text-sm font-medium text-white hover:bg-orange-600 transition-colors';
+                          ? 'rounded-lg bg-green-500 px-4 py-2 text-sm font-medium text-white hover:bg-green-600 transition-colors shadow-lg shadow-green-100'
+                          : nextStatus === 'ready'
+                            ? 'rounded-lg bg-indigo-500 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-600 transition-colors shadow-lg shadow-indigo-100'
+                            : 'rounded-lg bg-orange-500 px-4 py-2 text-sm font-medium text-white hover:bg-orange-600 transition-colors shadow-lg shadow-orange-100';
 
                       return (
                         <button
                           key={nextStatus}
-                          onClick={() => handleStatusChange(order._id || order.id, nextStatus)}
+                          onClick={() => {
+                            if (nextStatus === 'cancelled') {
+                              setCancelModal({ isOpen: true, orderId: order._id || order.id });
+                            } else {
+                              handleStatusChange(order._id || order.id, nextStatus);
+                            }
+                          }}
                           className={buttonClass}
                         >
                           {buttonText}
@@ -213,6 +252,13 @@ export const RestaurantOrdersPage = () => {
           })}
         </div>
       )}
+
+      <OrderCancelModal
+        isOpen={cancelModal.isOpen}
+        orderId={cancelModal.orderId}
+        onClose={() => setCancelModal({ isOpen: false, orderId: null })}
+        onConfirm={handleCancelConfirm}
+      />
     </div>
   );
 };

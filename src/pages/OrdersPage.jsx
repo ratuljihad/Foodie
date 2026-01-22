@@ -14,6 +14,12 @@ const ORDER_STATUSES = {
   cancelled: { label: 'Cancelled', color: 'bg-red-100 text-red-800', icon: '❌' },
 };
 
+const PAYMENT_STATUSES = {
+  pending: { label: 'Pending', color: 'bg-yellow-100 text-yellow-800' },
+  paid: { label: 'Paid', color: 'bg-green-100 text-green-800' },
+  failed: { label: 'Failed', color: 'bg-red-100 text-red-800' },
+};
+
 export const OrdersPage = () => {
   const { user } = useAppState();
   const [orders, setOrders] = useState([]);
@@ -41,7 +47,7 @@ export const OrdersPage = () => {
   if (loading) {
     return (
       <div className="space-y-6">
-        <PageHeader title="Orders" subtitle="Your recent orders and coin changes." />
+        <PageHeader title="Orders" subtitle="Your recent orders." />
         <div className="flex items-center justify-center py-12">
           <p className="text-slate-600">Loading orders...</p>
         </div>
@@ -52,7 +58,7 @@ export const OrdersPage = () => {
   if (error) {
     return (
       <div className="space-y-6">
-        <PageHeader title="Orders" subtitle="Your recent orders and coin changes." />
+        <PageHeader title="Orders" subtitle="Your recent orders." />
         <div className="rounded-lg bg-red-50 border border-red-200 p-4">
           <p className="text-red-800">{error}</p>
         </div>
@@ -62,7 +68,7 @@ export const OrdersPage = () => {
 
   return (
     <div className="space-y-6">
-      <PageHeader title="Orders" subtitle="Your recent orders and coin changes." />
+      <PageHeader title="Orders" subtitle="Your recent orders." />
       {!loading && !orders.length && (
         <div className="rounded-xl border border-slate-200 bg-white p-12 text-center shadow-sm">
           <p className="text-slate-600 mb-4">No orders yet.</p>
@@ -96,11 +102,9 @@ export const OrdersPage = () => {
                   </div>
                   <div className="text-right">
                     <p className="text-base font-semibold text-slate-900">{formatPrice(order.total)}</p>
-                    {order.coinDelta !== 0 && (
-                      <p className="text-sm text-orange-600">
-                        Coins {order.coinDelta >= 0 ? '+' : ''}{order.coinDelta}
-                      </p>
-                    )}
+                    <span className={`inline-block mt-1 px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-widest ${PAYMENT_STATUSES[order.paymentStatus]?.color || 'bg-slate-100'}`}>
+                      {PAYMENT_STATUSES[order.paymentStatus]?.label || order.paymentStatus || 'Pending'}
+                    </span>
                   </div>
                 </div>
                 <ul className="mt-3 space-y-1 text-sm text-slate-700">

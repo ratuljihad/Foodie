@@ -2,6 +2,11 @@ import { useState, useEffect } from 'react';
 import { PageHeader } from '../../components/PageHeader';
 import { useAuth } from '../../context/AuthContext';
 import { restaurantApi } from '../../api/restaurantClient';
+import { formatPrice } from '../../utils/currency';
+
+const commonCountries = [
+  'Bangladesh', 'Italy', 'China', 'India', 'USA', 'UK', 'Japan', 'Mexico', 'Thailand', 'France', 'Turkey'
+];
 
 export const ManageFoodsPage = () => {
   const { user } = useAuth();
@@ -18,8 +23,10 @@ export const ManageFoodsPage = () => {
     category: '',
     image: '',
     isSignature: false,
+    country: '',
   });
   const [error, setError] = useState(null);
+  const [countrySelect, setCountrySelect] = useState('');
 
   // Fetch foods on component mount
   useEffect(() => {
@@ -89,6 +96,7 @@ export const ManageFoodsPage = () => {
         description: formData.description,
         category: formData.category,
         isSignature: formData.isSignature,
+        country: formData.country,
         image: formData.imageFile ? '' : formData.image, // Use URL only if no file
       };
 
@@ -109,9 +117,11 @@ export const ManageFoodsPage = () => {
         category: '',
         image: '',
         isSignature: false,
+        country: '',
         imageFile: null,
       });
-      
+      setCountrySelect('');
+
       // Refresh foods list
       await fetchFoods();
     } catch (err) {
@@ -131,13 +141,14 @@ export const ManageFoodsPage = () => {
       category: food.category,
       image: food.image || '',
       isSignature: food.isSignature || false,
+      country: food.country || '',
       imageFile: null,
     });
     // Set preview if image exists
     if (food.image) {
       if (food.image.startsWith('http') || food.image.startsWith('/uploads/')) {
-        const fullImageUrl = food.image.startsWith('http') 
-          ? food.image 
+        const fullImageUrl = food.image.startsWith('http')
+          ? food.image
           : `http://localhost:3001${food.image}`;
         setImagePreview(fullImageUrl);
       } else {
@@ -148,6 +159,7 @@ export const ManageFoodsPage = () => {
     }
     setShowForm(true);
     setError(null);
+    setCountrySelect(food.country ? (commonCountries.includes(food.country) ? food.country : 'Other') : '');
   };
 
   const handleDelete = async (foodId) => {
@@ -176,9 +188,11 @@ export const ManageFoodsPage = () => {
       category: '',
       image: '',
       isSignature: false,
+      country: '',
       imageFile: null,
     });
     setError(null);
+    setCountrySelect('');
   };
 
   return (
@@ -229,7 +243,7 @@ export const ManageFoodsPage = () => {
               </div>
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-1">
-                  Price ($) *
+                  Price (৳) *
                 </label>
                 <input
                   type="number"
@@ -284,6 +298,49 @@ export const ManageFoodsPage = () => {
                 <p className="text-xs text-slate-500 mt-1">Or enter image URL below</p>
               </div>
             </div>
+            <div className="grid gap-4 md:grid-cols-2">
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-1">
+                  Food Country / Origin
+                </label>
+                <select
+                  name="countrySelect"
+                  value={countrySelect}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    setCountrySelect(value);
+                    if (value !== 'Other') {
+                      setFormData({ ...formData, country: value });
+                    }
+                  }}
+                  className="w-full rounded-lg border border-slate-300 px-3 py-2 focus:border-orange-500 focus:outline-none focus:ring-1 focus:ring-orange-500"
+                >
+                  <option value="">Select Country</option>
+                  {commonCountries.map(c => (
+                    <option key={c} value={c}>{c}</option>
+                  ))}
+                  <option value="Other">Other (Custom)</option>
+                </select>
+              </div>
+
+              {countrySelect === 'Other' && (
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-1">
+                    Custom Country Name
+                  </label>
+                  <input
+                    type="text"
+                    name="country"
+                    placeholder="Enter country name"
+                    value={formData.country}
+                    onChange={handleInputChange}
+                    className="w-full rounded-lg border border-slate-300 px-3 py-2 focus:border-orange-500 focus:outline-none focus:ring-1 focus:ring-orange-500"
+                    required
+                  />
+                </div>
+              )}
+            </div>
+
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-1">
                 Image URL (alternative to file upload)
@@ -366,7 +423,7 @@ export const ManageFoodsPage = () => {
       ) : (
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {foods.map((food) => {
-            const imageUrl = food.image 
+            const imageUrl = food.image
               ? (food.image.startsWith('http') ? food.image : `http://localhost:3001${food.image}`)
               : null;
             return (
@@ -384,10 +441,17 @@ export const ManageFoodsPage = () => {
                         </span>
                       )}
                     </div>
-                    <span className="text-lg font-bold text-slate-900">${food.price?.toFixed(2)}</span>
+                    <span className="text-lg font-bold text-slate-900">{formatPrice(food.price)}</span>
                   </div>
                   <p className="text-sm text-slate-600 mb-2">{food.description}</p>
-                  <p className="text-xs text-slate-500 mb-3">Category: {food.category}</p>
+                  <div className="flex flex-wrap gap-2 mb-3">
+                    <p className="text-xs text-slate-500">Category: {food.category}</p>
+                    {food.country && (
+                      <p className="text-xs text-orange-600 bg-orange-50 px-2 py-0.5 rounded border border-orange-100 italic">
+                        Origin: {food.country}
+                      </p>
+                    )}
+                  </div>
                   <div className="flex gap-2">
                     <button
                       onClick={() => handleEdit(food)}

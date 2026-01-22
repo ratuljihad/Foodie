@@ -117,13 +117,21 @@ export const SearchBar = ({ className = '' }) => {
                                         {results.restaurants.map((restaurant) => (
                                             <li key={restaurant.id || restaurant._id}>
                                                 <button
-                                                    onClick={() => handleSelect(`/restaurants?id=${restaurant.id || restaurant._id}`)} // Or specific restaurant page if available
+                                                    onClick={() => handleSelect(`/restaurants/${restaurant.id || restaurant._id}`)}
                                                     className="flex w-full items-center gap-3 px-4 py-3 text-left transition-colors hover:bg-slate-50"
                                                 >
-                                                    <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg bg-brand-100 text-lg">
-                                                        🏠
+                                                    <div className="h-10 w-10 flex-shrink-0 overflow-hidden rounded-lg bg-slate-100">
+                                                        {restaurant.image ? (
+                                                            <img
+                                                                src={restaurant.image.startsWith('http') ? restaurant.image : `http://localhost:3001${restaurant.image}`}
+                                                                alt={restaurant.name}
+                                                                className="h-full w-full object-cover"
+                                                            />
+                                                        ) : (
+                                                            <div className="flex h-full w-full items-center justify-center text-lg bg-orange-50">🏪</div>
+                                                        )}
                                                     </div>
-                                                    <div>
+                                                    <div className="flex-1">
                                                         <p className="font-medium text-slate-900">{restaurant.name}</p>
                                                         <p className="text-xs text-slate-500">{restaurant.cuisine}</p>
                                                     </div>
